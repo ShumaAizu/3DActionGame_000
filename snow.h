@@ -17,14 +17,28 @@
 #define SNOW_HEIGHT				(25.0f)			// 雪の高さ
 
 //*****************************************************************************
+// 雪の種類
+//*****************************************************************************
+typedef enum
+{
+	SNOWTYPE_000 = 0,
+	SNOWTYPE_001,
+	SNOWTYPE_002,
+	SNOWTYPE_MAX
+}SNOWTYPE;
+
+//*****************************************************************************
 // 雪の構造体定義
 //*****************************************************************************
 typedef struct
 {
 	D3DXVECTOR3 pos;							// 位置
+	D3DXVECTOR3 move;							// 移動量
 	float fRadius;								// 半径
 	D3DXMATRIX mtxWorld;						// ワールドマトリックス
+	SNOWTYPE type;								// 種類
 	int nIdxShadow;								// 影のインデックス
+	int nLife;									// 寿命
 	bool bUse;									// 使用状態
 }Snow;
 
@@ -35,6 +49,6 @@ void InitSnow(void);
 void UninitSnow(void);
 void UpdateSnow(void);
 void DrawSnow(void);
-void SetSnow(D3DXVECTOR3 pos, float fRadius);
+void SetSnow(D3DXVECTOR3 pos, D3DXVECTOR3 move, float fRadius, SNOWTYPE type);
 
 #endif

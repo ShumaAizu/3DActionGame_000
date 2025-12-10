@@ -33,14 +33,15 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define DIRECTINPUT_VERSION		(0x0800)														// ビルド時の警告対処用マクロ
-#define SCREEN_WIDTH			(1280.0f)														// ウインドウの幅
-#define SCREEN_HEIGHT			(720.0f)														// ウインドウの高さ
-#define DEFAULT_FADESPEED		(0.025f)														// フェードの速度
-#define FVF_VERTEX_2D			(D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1)					// 頂点フォーマット(2D)
-#define FVF_VERTEX_3D			(D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE | D3DFVF_TEX1)		// 頂点フォーマット(3D)
-#define SQRTF(X, Y)				(sqrtf(X * X + Y * Y))											// 対角線の長さ算出
-#define INIT_D3DXVEC3			(D3DXVECTOR3(0.0f, 0.0f, 0.0f))									// D3DXVECTOR3型初期化
+#define DIRECTINPUT_VERSION		(0x0800)																		// ビルド時の警告対処用マクロ
+#define SCREEN_WIDTH			(1280.0f)																		// ウインドウの幅
+#define SCREEN_HEIGHT			(720.0f)																		// ウインドウの高さ
+#define DEFAULT_FADESPEED		(0.025f)																		// フェードの速度
+#define FVF_VERTEX_2D			(D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1)									// 頂点フォーマット(2D)
+#define FVF_VERTEX_3D			(D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE | D3DFVF_TEX1)						// 頂点フォーマット(3D)
+#define SQRTF(X, Y)				(sqrtf(X * X + Y * Y))															// 対角線の長さ算出
+#define INIT_D3DXVEC3			(D3DXVECTOR3(0.0f, 0.0f, 0.0f))													// D3DXVECTOR3型初期化
+#define RANDAM_VEC3(X, Y, Z)	(D3DXVECTOR3((float)(rand() % X), (float)(rand() % Y), (float)(rand() % Z)))	// ランダムVECTOR3
 
 //*****************************************************************************
 // 頂点情報の構造体定義

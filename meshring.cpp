@@ -109,7 +109,7 @@ void InitMeshRing(void)
 		g_ameshring[nCntMeshRing].pIdxBuff->Unlock();
 	}
 
-	SetMeshRing(D3DXVECTOR3(0.0f, 50.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f));
+	//SetMeshRing(D3DXVECTOR3(0.0f, 50.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f));
 }
 
 //=============================================================================

@@ -33,7 +33,7 @@ void InitMeshDome(void)
 
 	// テクスチャの読み込み
 	D3DXCreateTextureFromFile(pDevice,
-		"data\\TEXTURE\\ski000.jpg",
+		"data\\TEXTURE\\sky002.jpg",
 		&g_pTextureMeshDome);
 
 	for (int nCntMeshDome = 0; nCntMeshDome < MAX_MESHDOME; nCntMeshDome++)
@@ -194,6 +194,8 @@ void DrawMeshDome(void)
 	LPDIRECT3DDEVICE9 pDevice = GetDevice();	// デバイスの取得
 	D3DXMATRIX mtxRot, mtxTrans;				// 計算用マトリックス
 
+	pDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
+
 	// アルファテストを有効にする
 	pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);		// アルファテストを有効にする
 	pDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATER);	// 比較方法(基準値より大きければ描画)
@@ -239,6 +241,8 @@ void DrawMeshDome(void)
 
 		}
 	}
+
+	pDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
 
 	// アルファテストを無効にする
 	pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);		// アルファテストを無効化
@@ -380,7 +384,7 @@ void SetMeshDome(D3DXVECTOR3 pos, D3DXVECTOR3 rot, float fRadius, int nVertical,
 				pVtx[nCntVtxHorizontal].col = D3DXCOLOR(0.65f, 0.85f, 1.0f, 1.0f);
 
 				// テクスチャ座標の設定
-				pVtx[nCntVtxHorizontal].tex = D3DXVECTOR2(1.0f * nCntVtxHorizontal, 1.0f * nCntVtxVertical);
+				pVtx[nCntVtxHorizontal].tex = D3DXVECTOR2((1.0f / nHorizontal) * nCntVtxHorizontal, (1.0f / nVertical) * nCntVtxVertical);
 
 				// 角度を加算
 				fAngleHorizontal += (D3DX_PI / (nHorizontal - 1)) * 2.0f;	// 合計6.28加算したいので倍にする
