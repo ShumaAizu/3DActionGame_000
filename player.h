@@ -1,0 +1,85 @@
+//=============================================================================
+//
+//	プレイヤー処理 [player.h]
+//	Author : SHUMA AIZU
+// 
+//=============================================================================
+
+#ifndef _PLAYER_H_
+#define _PLAYER_H_
+
+#include "main.h"
+#include "meshfield.h"
+#include "offsetmodel.h"
+
+//*****************************************************************************
+// マクロ定義
+//*****************************************************************************
+#define PLAYER_WIDTH			(5.0f)			// プレイヤーの幅
+#define PLAYER_HEIGHT			(5.0f)			// プレイヤーの高さ
+#define PLAYER_SPEED			(0.115f)			// プレイヤーの速さ
+
+//*****************************************************************************
+// プレイヤーの状態
+//*****************************************************************************
+typedef enum
+{
+	PLAYERSTATE_NUETRAL = 0,
+	PLAYERSTATE_MOVE,
+	PLAYERSTATE_JUMP,
+	PLAYERSTATE_MAX
+}PLAYERSTATE;
+
+//*****************************************************************************
+// プレイヤーの構造体定義
+//*****************************************************************************
+typedef struct
+{
+	OffSetModel aOffSetModel[MAX_OFFSETMODEL];	// モデル(パーツ)
+	int nNumOffSetModel;						// モデル(パーツ)の総数
+	MOTION_INFO aMotionInfo[MAX_MOTION];		// モーション情報
+	int nNumMotion;								// モーションの総数
+	MOTIONTYPE motiontype;						// 現在のモーションの種類
+	bool bLoopMotion;							// 現在のループするかどうか
+	int nNumKey;								// 現在のキーの総数
+	int nKey;									// 現在の現在のキーNo.
+	int nCounterMotion;							// 現在のモーションカウンター
+	bool bFinishMotion;
+
+	bool bBlendMotion;							// モーションブレンドがあるかどうか
+	MOTIONTYPE motiontypeBlend;					// モーションブレンドのモーションの種類
+	bool bLoopMotionBlend;						// モーションブレンドのループするかどうか
+	int nNumKeyBlend;							// モーションブレンドのキーの総数
+	int nKeyBlend;								// モーションブレンドの現在のキーNo.
+	int nCounterMotionBlend;					// モーションブレンドのモーションカウンター
+
+	int nFrameBlend;							// ブレンドフレーム数
+	int nCounterBlend;							// ブレンドカウンター
+
+	D3DXVECTOR3 pos;							// 現在の位置
+	D3DXVECTOR3 posOld;							// 過去の位置
+	D3DXVECTOR3 rot;							// 向き
+	D3DXVECTOR3 move;							// 移動量
+	float fSpeed;								// 速度
+	int nIdxShadow;								// 影のインデックス
+	bool bJump;									// ジャンプ状態
+	float fMoveKeyboard;						// キーボード操作による移動量
+	PMESHFIELD pRideField;						// 乗っているフィールド
+
+	D3DXMATRIX mtxWorld;						// ワールドマトリックス
+}Player;
+
+//*****************************************************************************
+// プロトタイプ宣言
+//*****************************************************************************
+void InitPlayer(void);
+void UninitPlayer(void);
+void UpdatePlayer(void);
+void DrawPlayer(void);
+Player* GetPlayer(void);
+void SetMotion(MOTIONTYPE motiontype, bool bLoopMotion, bool bBlendMotion, int nFrameBlend);
+void UpdateMotion(void);
+void LoadPlayer(void);
+void LoadMotion(bool bLoop, int nNumKey, KEY_INFO* pKeyInfo, int nMotion);
+
+#endif
