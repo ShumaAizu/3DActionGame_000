@@ -10,11 +10,12 @@
 ////*****************************************************************************
 //// グローバル変数
 ////*****************************************************************************
-//ObjectInfo g_objectInfo[MAX_OBJECT] = {};
+//ObjectInfo g_aobjectInfo[MAX_OBJECT] = {};
+//int g_nNumObject;
 //
 //void InitObject(void)
 //{
-//
+//	g_nNumObject = -1;
 //}
 //
 //void UninitObject(void)
@@ -40,13 +41,15 @@
 //	// デバイスの取得
 //	LPDIRECT3DDEVICE9 pDevice = GetDevice();
 //
+//	POBJECTUNFO pObject = &g_aobjectInfo[0];
+//
 //	int nNumVtx;		// 頂点数
 //	DWORD dwSizeFVF;	// 頂点フォーマットのサイズ
 //	BYTE* pVtxBuff;		// 頂点バッファへのポインタ
 //
-//	for (int nCntObjectInfo = 0; nCntObjectInfo < MAX_OBJECT; nCntObjectInfo++)
+//	for (int nCntObjectInfo = 0; nCntObjectInfo < MAX_OBJECT; nCntObjectInfo++, pObject++)
 //	{
-//		if (g_objectInfo[nCntObjectInfo].bUse == true)
+//		if (pObject->bUse == true)
 //		{
 //			continue;
 //		}
@@ -56,74 +59,74 @@
 //			D3DXMESH_SYSTEMMEM,
 //			pDevice,
 //			NULL,
-//			&g_objectInfo[nCntObjectInfo].pBuffMat,
+//			&pObject->pBuffMat,
 //			NULL,
-//			&g_objectInfo[nCntObjectInfo].dwNumMat,
-//			&g_objectInfo[nCntObjectInfo].pMesh);
+//			&pObject->dwNumMat,
+//			&pObject->pMesh);
 //
 //		D3DXMATERIAL* pMat;
 //
 //		// マテリアルデータへのポインタを取得
-//		pMat = (D3DXMATERIAL*)g_objectInfo[nCntObjectInfo].pBuffMat->GetBufferPointer();
+//		pMat = (D3DXMATERIAL*)pObject->pBuffMat->GetBufferPointer();
 //
-//		for (int nCntMat = 0; nCntMat < (int)g_objectInfo[nCntObjectInfo].dwNumMat; nCntMat++)
+//		for (int nCntMat = 0; nCntMat < (int)pObject->dwNumMat; nCntMat++)
 //		{
 //			if (pMat[nCntMat].pTextureFilename != NULL)
 //			{// テクスチャファイルが存在する
 //				// テクスチャの読み込み
 //				D3DXCreateTextureFromFile(pDevice,
 //					pMat[nCntMat].pTextureFilename,
-//					&g_objectInfo[nCntObjectInfo].apTexture[nCntMat]);
+//					&pObject->apTexture[nCntMat]);
 //			}
 //		}
 //
 //		// 頂点数を取得
-//		nNumVtx = g_objectInfo[nCntObjectInfo].pMesh->GetNumVertices();
+//		nNumVtx = pObject->pMesh->GetNumVertices();
 //
 //		// 頂点フォーマットのサイズを取得
-//		dwSizeFVF = D3DXGetFVFVertexSize(g_objectInfo[nCntObjectInfo].pMesh->GetFVF());
+//		dwSizeFVF = D3DXGetFVFVertexSize(pObject->pMesh->GetFVF());
 //
 //		// 頂点バッファをロック
-//		g_objectInfo[nCntObjectInfo].pMesh->LockVertexBuffer(D3DLOCK_READONLY, (void**)&pVtxBuff);
+//		pObject->pMesh->LockVertexBuffer(D3DLOCK_READONLY, (void**)&pVtxBuff);
 //
 //		for (int nCntVtx = 0; nCntVtx < nNumVtx; nCntVtx++)
 //		{
 //			D3DXVECTOR3 vtx = *(D3DXVECTOR3*)pVtxBuff;	// 頂点情報の代入
 //
-//			if (vtx.x > g_objectInfo[nCntObjectInfo].vtxMax.x)
+//			if (vtx.x > pObject->vtxMax.x)
 //			{
-//				g_objectInfo[nCntObjectInfo].vtxMax.x = vtx.x;
+//				pObject->vtxMax.x = vtx.x;
 //			}
 //
-//			if (vtx.y > g_objectInfo[nCntObjectInfo].vtxMax.y)
+//			if (vtx.y > pObject->vtxMax.y)
 //			{
-//				g_objectInfo[nCntObjectInfo].vtxMax.y = vtx.y;
+//				pObject->vtxMax.y = vtx.y;
 //			}
 //
-//			if (vtx.z > g_objectInfo[nCntObjectInfo].vtxMax.z)
+//			if (vtx.z > pObject->vtxMax.z)
 //			{
-//				g_objectInfo[nCntObjectInfo].vtxMax.z = vtx.z;
+//				pObject->vtxMax.z = vtx.z;
 //			}
 //
-//			if (vtx.x < g_objectInfo[nCntObjectInfo].vtxMin.x)
+//			if (vtx.x < pObject->vtxMin.x)
 //			{
-//				g_objectInfo[nCntObjectInfo].vtxMin.x = vtx.x;
+//				pObject->vtxMin.x = vtx.x;
 //			}
 //
-//			if (vtx.y < g_objectInfo[nCntObjectInfo].vtxMin.y)
+//			if (vtx.y < pObject->vtxMin.y)
 //			{
-//				g_objectInfo[nCntObjectInfo].vtxMin.y = vtx.y;
+//				pObject->vtxMin.y = vtx.y;
 //			}
 //
-//			if (vtx.z < g_objectInfo[nCntObjectInfo].vtxMin.z)
+//			if (vtx.z < pObject->vtxMin.z)
 //			{
-//				g_objectInfo[nCntObjectInfo].vtxMin.z = vtx.z;
+//				pObject->vtxMin.z = vtx.z;
 //			}
 //
 //			pVtxBuff += dwSizeFVF;		// 頂点フォーマットのサイズ分ポインタを進める
 //		}
 //
 //		// 頂点バッファのアンロック
-//		g_objectInfo[nCntObjectInfo].pMesh->UnlockVertexBuffer();
+//		pObject->pMesh->UnlockVertexBuffer();
 //	}
 //}

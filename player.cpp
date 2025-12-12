@@ -31,36 +31,6 @@
 //*****************************************************************************
 Player g_player;						// プレイヤーの情報
 
-static KEY_INFO g_aKeyNeutral[MAX_KEY] =
-{
-	{25, 
-	{{0.0f, 0.0f, 0.0f, -0.50f, 0.0f, 0.0f}, 
-	{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}}},
-	{25, 
-	{{0.0f, 0.0f, 0.0f, 0.50f, 0.0f, 0.0f},
-	{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}}}
-};
-
-static KEY_INFO g_aKeyNeutral0[MAX_KEY] =
-{
-	{25,
-	{{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -0.50f},
-	{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}}},
-	{25,
-	{{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.50f},
-	{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}}}
-};
-
-const char* c_apOffSetModelFileName[MAX_OFFSETMODEL] =
-{
-	"data\\MODEL\\01_head.x",
-	"data\\MODEL\\99_hat.x",
-	//"data\\MODEL\\snowman\\00_snowman_body.x",
-	//"data\\MODEL\\snowman\\01_snowman_head.x",
-	//"data\\MODEL\\snowman\\02_snowman_armR.x",
-	//"data\\MODEL\\snowman\\03_snowman_armL.x"
-};
-
 //=============================================================================
 //	プレイヤーの初期化処理
 //=============================================================================
@@ -69,81 +39,19 @@ void InitPlayer(void)
 	// デバイスの取得
 	LPDIRECT3DDEVICE9 pDevice = GetDevice();
 
+	memset(&g_player, NULL, sizeof(Player));
+
 	// 初期化
 	g_player.pos = D3DXVECTOR3(0.0f, 0.0f, -1500.0f);
 	g_player.posOld = D3DXVECTOR3(0.0f, 0.0f, -1500.0f);
-	g_player.rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-	g_player.move = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	//g_player.rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	//g_player.move = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 	g_player.fSpeed = PLAYER_SPEED;
-	g_player.pRideField = NULL;
+	//g_player.pRideField = NULL;
 	g_player.nIdxShadow = -1;
-
-	g_player.aMotionInfo[0].aKeyInfo[0] = g_aKeyNeutral[0];
-	g_player.aMotionInfo[0].aKeyInfo[1] = g_aKeyNeutral[1];
-
-	g_player.aMotionInfo[1].aKeyInfo[0] = g_aKeyNeutral0[0];
-	g_player.aMotionInfo[1].aKeyInfo[1] = g_aKeyNeutral0[1];
-
-	SetMotion(MOTIONTYPE_NEUTRAL, true, false, 0);
 
 	// 影の設定
 	g_player.nIdxShadow = SetShadow();
-
-	D3DXMATERIAL* pMat;
-
-	for (int nCntOffSetModel = 0; nCntOffSetModel < MAX_OFFSETMODEL; nCntOffSetModel++)
-	{
-		// Xファイルの読み込み
-		D3DXLoadMeshFromX(c_apOffSetModelFileName[nCntOffSetModel],
-			D3DXMESH_SYSTEMMEM,
-			pDevice,
-			NULL,
-			&g_player.aOffSetModel[nCntOffSetModel].pBuffMat,
-			NULL,
-			&g_player.aOffSetModel[nCntOffSetModel].dwNumMat,
-			&g_player.aOffSetModel[nCntOffSetModel].pMesh);
-
-		// マテリアルデータへのポインタを取得
-		pMat = (D3DXMATERIAL*)g_player.aOffSetModel[nCntOffSetModel].pBuffMat->GetBufferPointer();
-
-		for (int nCntMat = 0; nCntMat < (int)g_player.aOffSetModel[nCntOffSetModel].dwNumMat; nCntMat++)
-		{
-			if (pMat[nCntMat].pTextureFilename != NULL)
-			{// テクスチャファイルが存在する
-				// テクスチャの読み込み
-				D3DXCreateTextureFromFile(pDevice,
-					pMat[nCntMat].pTextureFilename,
-					&g_player.aOffSetModel[nCntOffSetModel].apTexture[nCntMat]);
-			}
-		}
-	}
-
-	g_player.nNumOffSetModel = MAX_OFFSETMODEL;
-
-	// 各パーツの階層構造設定
-	g_player.aOffSetModel[0].nIdxModelParent = -1;						// 親モデルのインデックスを設定
-	g_player.aOffSetModel[0].OffPos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);	// パーツ[0]の位置(オフセット)
-	g_player.aOffSetModel[0].pos = g_player.aOffSetModel[0].OffPos;		// パーツ[0]の位置(オフセット)
-	g_player.aOffSetModel[0].OffRot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-	g_player.aOffSetModel[0].rot = g_player.aOffSetModel[0].OffRot;		// パーツ[0]の向き
-
-	g_player.aOffSetModel[1].nIdxModelParent = 0;						// 親モデルのインデックスを設定
-	g_player.aOffSetModel[1].OffPos = D3DXVECTOR3(0.0f, 15.0f, 0.0f);	// パーツ[1]の位置(オフセット)
-	g_player.aOffSetModel[1].pos = g_player.aOffSetModel[1].OffPos;		// パーツ[1]の位置(オフセット)
-	g_player.aOffSetModel[1].OffRot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-	g_player.aOffSetModel[1].rot = g_player.aOffSetModel[1].OffRot;		// パーツ[1]の向き
-
-	//g_player.aOffSetModel[1].nIdxModelParent = 0;					// 親モデルのインデックスを設定
-	//g_player.aOffSetModel[1].pos = D3DXVECTOR3(0.0f, 22.5f, 0.0f);	// パーツ[1]の位置(オフセット)
-	//g_player.aOffSetModel[1].rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);	// パーツ[1]の向き
-
-	//g_player.aOffSetModel[2].nIdxModelParent = 0;					// 親モデルのインデックスを設定
-	//g_player.aOffSetModel[2].pos = D3DXVECTOR3(-8.5f, 17.5f, 0.0f);	// パーツ[2]の位置(オフセット)
-	//g_player.aOffSetModel[2].rot = D3DXVECTOR3(0.0f, 0.0f, 0.90f);	// パーツ[2]の向き
-
-	//g_player.aOffSetModel[3].nIdxModelParent = 0;					// 親モデルのインデックスを設定
-	//g_player.aOffSetModel[3].pos = D3DXVECTOR3(8.5f, 17.5f, 0.0f);	// パーツ[3]の位置(オフセット)
-	//g_player.aOffSetModel[3].rot = D3DXVECTOR3(0.0f, 0.0f, -0.90f);	// パーツ[3]の向き
 }
 
 //=============================================================================
@@ -197,7 +105,7 @@ void DrawPlayer(void)
 	pDevice->GetMaterial(&matDef);
 
 	// 全モデル(パーツ)の描画
-	for (int nCntOffSetModel = 0; nCntOffSetModel < MAX_OFFSETMODEL; nCntOffSetModel++)
+	for (int nCntOffSetModel = 0; nCntOffSetModel < g_player.nNumOffSetModel; nCntOffSetModel++)
 	{
 		D3DXMATRIX mtxRotOffSetModel, mtxTransOffSetModel;	// 計算用マトリックス
 		D3DXMATRIX mtxParent;								// 親のマトリックス
@@ -317,37 +225,11 @@ void UpdatePlayer(void)
 
 	g_player.rot.y = AngleNormalize(g_player.rot.y);
 
-	// 向き変更
-	if (GetKeyboardPress(DIK_LSHIFT) == true)
-	{
-		g_player.rot.y += -0.1f;
-	}
-
-	if (GetKeyboardPress(DIK_RSHIFT) == true)
-	{
-		g_player.rot.y += 0.1f;
-	}
-
 	if (GetKeyboardRepeat(DIK_SPACE) == true && g_player.bJump == false)
 	{
 		SetBullet(g_player.pos, g_player.rot);
 		g_player.move.y = PLAYER_JUMP;
 		g_player.bJump = true;
-	}
-
-	if (GetKeyboardPress(DIK_5) == true)
-	{
-		g_player.aOffSetModel[1].rot.y += 0.1f;
-		g_player.aOffSetModel[1].rot.y = AngleNormalize(g_player.aOffSetModel[1].rot.y);
-	}
-
-	if (GetKeyboardTrigger(DIK_0) == true)
-	{
-		SetMotion(MOTIONTYPE_NEUTRAL, true, true, 100);
-	}
-	if (GetKeyboardTrigger(DIK_1) == true)
-	{
-		SetMotion(MOTIONTYPE_MOVE, true, true, 100);
 	}
 
 	PrintDebugProc("現在のモーション : %d\n", g_player.motiontype);
@@ -390,9 +272,6 @@ void UpdatePlayer(void)
 
 	g_player.pRideField = CollisionMeshField(&g_player.pos, &g_player.posOld, &g_player.move);
 
-	//// 内積の当たり判定（テスト）
-	//CollisionDot(&g_player.pos, &g_player.posOld, &g_player.move, &g_player.rot);
-
 	// モデルとの当たり判定
 	CollisionModel(&g_player.pos, &g_player.posOld, &g_player.move, D3DXVECTOR3(10.0f, 10.0f, 10.0f), D3DXVECTOR3(10.0f, 10.0f, 10.0f));
 
@@ -404,13 +283,35 @@ void UpdatePlayer(void)
 	// 全モデル更新
 	UpdateMotion();
 
+	//if (GetKeyboardTrigger(DIK_5) == true)
+	//{
+	//	SetEffect(D3DXVECTOR3(0.0f, 50.0f, 0.0f), INIT_D3DXVEC3, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), 15.0f, 0.05f, 0.0f, 100);
+	//}
+
 	if (GetKeyboardTrigger(DIK_5) == true)
 	{
-		SetEffect(D3DXVECTOR3(0.0f, 50.0f, 0.0f), INIT_D3DXVEC3, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), 15.0f, 0.05f, 0.0f, 100);
+		SetMotion(MOTIONTYPE_NEUTRAL, true, true, 10);
 	}
 
-	//SetRainbowParticle(g_player.pos, 30.0f, 5, D3DX_PI, -D3DX_PI);
+	if (GetKeyboardTrigger(DIK_6) == true)
+	{
+		SetMotion(MOTIONTYPE_ACTION, false, true, 10);
+	}
 
+	if (GetKeyboardTrigger(DIK_7) == true)
+	{
+		SetMotion(MOTIONTYPE_JUMP, false, true, 10);
+	}
+
+	if (GetKeyboardTrigger(DIK_8) == true)
+	{
+		SetMotion(MOTIONTYPE_LANDING, false, true, 10);
+	}
+
+	if (GetKeyboardTrigger(DIK_9) == true)
+	{
+		SetMotion(MOTIONTYPE_MOVE, true, true, 10);
+	}
 }
 
 //=============================================================================
@@ -435,16 +336,15 @@ void SetMotion(MOTIONTYPE motiontype, bool bLoopMotion, bool bBlendMotion, int n
 
 		g_player.motiontypeBlend = motiontype;
 		g_player.bLoopMotionBlend = bLoopMotion;
-		g_player.nNumKeyBlend = MAX_KEY;
+		g_player.nNumKeyBlend = g_player.aMotionInfo[motiontype].nNumKey;
 		g_player.nKeyBlend = 0;
 		g_player.nCounterMotionBlend = 0;
 	}
 	else
 	{
-		g_player.nNumMotion = MAX_MOTION;
+		g_player.nNumKey = g_player.aMotionInfo[motiontype].nNumKey;
 		g_player.motiontype = motiontype;
 		g_player.bLoopMotion = bLoopMotion;
-		g_player.nNumKey = MAX_KEY;
 		g_player.nKey = 0;
 		g_player.nCounterMotion = 0;
 
@@ -464,7 +364,6 @@ void SetMotion(MOTIONTYPE motiontype, bool bLoopMotion, bool bBlendMotion, int n
 			pModel->pos += pModel->OffPos;
 			pModel->rot += pModel->OffRot;
 		}
-
 	}
 }
 
@@ -497,11 +396,17 @@ void UpdateMotion(void)
 		if (g_player.bBlendMotion == true)
 		{// ブレンドあり
 
-			KEY DiffKeyBlend = {};
-			KEY RateKeyBlend = {};
-			float fPosXCurrent, fPosYCurrent, fPosZCurrent, fRotXCurrent, fRotYCurrent, fRotZCurrent;
-			float fPosXBlend, fPosYBlend, fPosZBlend, fRotXBlend, fRotYBlend, fRotZBlend;
-			float fDiffKeyBlend, fDiffBlend;
+			// 現在の値格納用
+			float fPosXCurrent, fRotXCurrent,	// 位置・向きX
+				fPosYCurrent, fRotYCurrent, 	// 位置・向きY
+				fPosZCurrent, fRotZCurrent;		// 位置・向きZ
+
+			// ブレンド用
+			float fPosXBlend, fRotXBlend,
+				fPosYBlend, fRotYBlend, 
+				fPosZBlend, fRotZBlend;	
+
+			float fDiffKeyBlend, fDiffBlend;	// 差分
 
 			// ブレンドモーションの現在のキー
 			KEY* pKeyBlend = &g_player.aMotionInfo[g_player.motiontypeBlend].aKeyInfo[g_player.nKeyBlend].aKey[nCntModel];
@@ -588,8 +493,6 @@ void UpdateMotion(void)
 			fRotZ = fRotZCurrent + (fDiffBlend * fRateBlend);
 
 			fRotY = AngleNormalize(fRotY);
-
-			PrintDebugProc("現在 = { %.2f, %.2f %.2f }\n", fRotX, fRotY, fRotZ);
 		}
 		else
 		{
@@ -635,19 +538,24 @@ void UpdateMotion(void)
 
 		if (g_player.nCounterMotionBlend >= g_player.aMotionInfo[g_player.motiontypeBlend].aKeyInfo[g_player.nKeyBlend].nFrame)
 		{
-			g_player.nCounterMotionBlend = 0;
-			g_player.nKeyBlend = (g_player.nKeyBlend + 1) % g_player.nNumKeyBlend;
+			// キーを進める
+			g_player.nCounterMotionBlend = 0;	// カウンターリセット
+			if ((g_player.nKeyBlend = (g_player.nKeyBlend + 1) % g_player.nNumKeyBlend) == 0 && g_player.bLoopMotionBlend == false)
+			{// キーが終着点まで来たかつループ状態じゃなければ
+				SetMotion(MOTIONTYPE_NEUTRAL, true, true, 10);
+			}
 		}
 
 		// ブレンドカウンターを更新
 		g_player.nCounterBlend++;
 		if (g_player.nCounterBlend >= g_player.nFrameBlend)
-		{
-			g_player.nCounterBlend = 0;
-			g_player.motiontype = g_player.motiontypeBlend;
-			g_player.nCounterMotion = g_player.nCounterMotionBlend;
-			g_player.nKey = g_player.nKeyBlend;
-			g_player.bBlendMotion = false;
+		{// カウンターが回り切ったら
+			g_player.nCounterBlend = 0;									// カウンターリセット
+			g_player.motiontype = g_player.motiontypeBlend;				// 次のモーションに切り替える
+			g_player.nCounterMotion = g_player.nCounterMotionBlend;		// モーションカウンターをブレンドと同期
+			g_player.nKey = g_player.nKeyBlend;							// キー番号をブレンドと同期
+			g_player.bLoopMotion = g_player.bLoopMotionBlend;			// ループ状態をブレンドと同期
+			g_player.bBlendMotion = false;								// ブレンド状態を終了
 		}
 	}
 	else
@@ -656,8 +564,81 @@ void UpdateMotion(void)
 
 		if (g_player.nCounterMotion >= g_player.aMotionInfo[g_player.motiontype].aKeyInfo[g_player.nKey].nFrame)
 		{
-			g_player.nCounterMotion = 0;
-			g_player.nKey = (g_player.nKey + 1) % g_player.nNumKey;
+			// キーを進める
+			g_player.nCounterMotion = 0;	// カウンターリセット
+			if((g_player.nKey = (g_player.nKey + 1) % g_player.nNumKey) == 0 && g_player.bLoopMotion == false)
+			{// キーが終着点まで来たかつループ状態じゃなければ
+				SetMotion(MOTIONTYPE_NEUTRAL, true, true, 10);
+			}
 		}
 	}
+}
+
+//=============================================================================
+//	プレイヤーのパーツ設定処理
+//=============================================================================
+void LoadPartsPlayer(const char* pPartsFile)
+{
+	LPDIRECT3DDEVICE9 pDevice = GetDevice();	// デバイスの取得
+
+	D3DXMATERIAL* pMat;
+
+	OffSetModel *pOffSetModel = &g_player.aOffSetModel[g_player.nNumOffSetModel];
+
+	// Xファイルの読み込み
+	D3DXLoadMeshFromX(pPartsFile,
+		D3DXMESH_SYSTEMMEM,
+		pDevice,
+		NULL,
+		&pOffSetModel->pBuffMat,
+		NULL,
+		&pOffSetModel->dwNumMat,
+		&pOffSetModel->pMesh);
+
+	// マテリアルデータへのポインタを取得
+	pMat = (D3DXMATERIAL*)pOffSetModel->pBuffMat->GetBufferPointer();
+
+	for (int nCntMat = 0; nCntMat < (int)pOffSetModel->dwNumMat; nCntMat++)
+	{
+		if (pMat[nCntMat].pTextureFilename != NULL)
+		{// テクスチャファイルが存在する
+			// テクスチャの読み込み
+			D3DXCreateTextureFromFile(pDevice,
+				pMat[nCntMat].pTextureFilename,
+				&pOffSetModel->apTexture[nCntMat]);
+		}
+	}
+
+	g_player.nNumOffSetModel++;
+}
+
+//=============================================================================
+//	プレイヤーのオフセット読み込み処理
+//=============================================================================
+void LoadCharacterPlayer(D3DXVECTOR3 pos, D3DXVECTOR3 rot, int nIdxModel, int nIdxModelParent)
+{
+	OffSetModel* pOffSetModel = &g_player.aOffSetModel[nIdxModel];
+
+	pOffSetModel->nIdxModel = nIdxModel;
+	pOffSetModel->nIdxModelParent = nIdxModelParent;
+	pOffSetModel->pos = pOffSetModel->OffPos = pos;
+	pOffSetModel->rot = pOffSetModel->OffRot = rot;
+}
+
+//=============================================================================
+//	プレイヤーのモーション読み込み処理
+//=============================================================================
+void LoadMotion(bool bLoop, int nNumKey, KEY_INFO* pKeyInfo, int nMotion)
+{
+	MOTION_INFO* pMotionInfo = &g_player.aMotionInfo[nMotion];
+
+	pMotionInfo->bLoop = bLoop;
+	pMotionInfo->nNumKey = nNumKey;
+
+	for (int nCntKeyInfo = 0; nCntKeyInfo < nNumKey; nCntKeyInfo++, pKeyInfo++)
+	{
+		pMotionInfo->aKeyInfo[nCntKeyInfo] = *pKeyInfo;
+	}
+
+	g_player.nNumMotion++;
 }

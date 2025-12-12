@@ -14,7 +14,7 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define MAX_SNOW				(2048)			// 雪の最大数
+#define MAX_SNOW				(4096)			// 雪の最大数
 
 //*****************************************************************************
 // グローバル変数
@@ -131,6 +131,8 @@ void DrawSnow(void)
 	D3DXMATRIX mtxRot, mtxTrans;				// 計算用マトリックス
 	D3DXMATRIX mtxView;							// ビューマトリックス
 
+	pDevice->SetRenderState(D3DRS_LIGHTING, FALSE);		// ライトを無効にする
+
 	// アルファテストを有効にする
 	pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);		// アルファテストを有効にする
 	pDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATER);	// 比較方法(基準値より大きければ描画)
@@ -175,6 +177,8 @@ void DrawSnow(void)
 		pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, nCntSnow * 4, 2);
 	}
 
+	pDevice->SetRenderState(D3DRS_LIGHTING, TRUE);		// ライトを有効にする
+
 	// アルファテストを無効にする
 	pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);		// アルファテストを無効化
 	pDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_ALWAYS);	// 比較方法(すべて描画)
@@ -204,15 +208,12 @@ void UpdateSnow(void)
 			pSnow->bUse = false;
 		}
 
-		//SetPositionShadow(g_asnow[nCntSnow].nIdxShadow, D3DXVECTOR3(g_asnow[nCntSnow].pos.x, g_asnow[nCntSnow].pos.y - g_asnow[nCntSnow].pos.y, g_asnow[nCntSnow].pos.z));
-
 	}
 
-	SetSnow(D3DXVECTOR3((float)(rand() % 6000 - 3000), (float)(rand() % 500 + 300), (float)(rand() % 6000 - 3000)), D3DXVECTOR3(-(float)(rand() % 5), -(float)(rand() % 5 + 1), 0.0f), (float)(rand() % 5 + 1), (SNOWTYPE)(rand() % SNOWTYPE_MAX));
-	SetSnow(D3DXVECTOR3((float)(rand() % 6000 - 3000), (float)(rand() % 500 + 300), (float)(rand() % 6000 - 3000)), D3DXVECTOR3(-(float)(rand() % 5), -(float)(rand() % 5 + 1), 0.0f), (float)(rand() % 5 + 1), (SNOWTYPE)(rand() % SNOWTYPE_MAX));
-	SetSnow(D3DXVECTOR3((float)(rand() % 6000 - 3000), (float)(rand() % 500 + 300), (float)(rand() % 6000 - 3000)), D3DXVECTOR3(-(float)(rand() % 5), -(float)(rand() % 5 + 1), 0.0f), (float)(rand() % 5 + 1), (SNOWTYPE)(rand() % SNOWTYPE_MAX));
-	SetSnow(D3DXVECTOR3((float)(rand() % 6000 - 3000), (float)(rand() % 500 + 300), (float)(rand() % 6000 - 3000)), D3DXVECTOR3(-(float)(rand() % 5), -(float)(rand() % 5 + 1), 0.0f), (float)(rand() % 5 + 1), (SNOWTYPE)(rand() % SNOWTYPE_MAX));
-	SetSnow(D3DXVECTOR3((float)(rand() % 6000 - 3000), (float)(rand() % 500 + 300), (float)(rand() % 6000 - 3000)), D3DXVECTOR3(-(float)(rand() % 5), -(float)(rand() % 5 + 1), 0.0f), (float)(rand() % 5 + 1), (SNOWTYPE)(rand() % SNOWTYPE_MAX));
+	for (int nCntSnow = 0; nCntSnow < 15; nCntSnow++)
+	{
+		SetSnow(D3DXVECTOR3((float)(rand() % 6000 - 3000), (float)(rand() % 500 + 300), (float)(rand() % 6000 - 3000)), D3DXVECTOR3(-(float)(rand() % 5), -(float)(rand() % 5 + 1), 0.0f), (float)(rand() % 5 + 1), (SNOWTYPE)(rand() % SNOWTYPE_MAX));
+	}
 }
 
 //=============================================================================

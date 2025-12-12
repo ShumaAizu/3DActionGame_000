@@ -120,5 +120,6 @@
 //void UninitObject(void);
 //void UpdateObject(void);
 //void DrawObject(void);
+//void LoadObject(const char* pFileName);
 //
 //#endif

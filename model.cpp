@@ -29,8 +29,8 @@ float g_fModelMove;
 const char* g_pModelFileName[MODELTYPE_MAX] =
 {
 	"data\\MODEL\\Iceberg000.x",
-	"data\\MODEL\\snow001X.x",
-	"data\\MODEL\\field000.x",
+	"data\\MODEL\\snow001.x",
+	"data\\MODEL\\field001.x",
 };
 
 //=============================================================================

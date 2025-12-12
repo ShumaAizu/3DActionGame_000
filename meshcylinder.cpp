@@ -32,7 +32,7 @@ void InitMeshCylinder(void)
 
 	// テクスチャの読み込み
 	D3DXCreateTextureFromFile(pDevice,
-		"data\\TEXTURE\\mountain000.png",
+		"data\\TEXTURE\\Iceberg000.png",
 		&g_pTextureMeshCylinder);
 
 	for (int nCntMeshCylinder = 0; nCntMeshCylinder < MAX_MESHCYLINDER; nCntMeshCylinder++)
@@ -182,7 +182,7 @@ void DrawMeshCylinder(void)
 	// アルファテストを有効にする
 	pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);		// アルファテストを有効にする
 	pDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATER);	// 比較方法(基準値より大きければ描画)
-	pDevice->SetRenderState(D3DRS_ALPHAREF, 150);					// アルファテストの参照値を設定(～以上で描画, intで設定)
+	pDevice->SetRenderState(D3DRS_ALPHAREF, 150);				// アルファテストの参照値を設定(～以上で描画, intで設定)
 
 	for (int nCntMeshCylinder = 0; nCntMeshCylinder < MAX_MESHCYLINDER; nCntMeshCylinder++)
 	{

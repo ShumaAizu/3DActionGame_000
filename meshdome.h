@@ -19,18 +19,21 @@
 //*****************************************************************************
 // メッシュドームの構造体定義
 //*****************************************************************************
-typedef struct
+typedef struct MeshDome
 {
 	LPDIRECT3DVERTEXBUFFER9 pVtxBuff;			// 頂点バッファへのポインタ
 	LPDIRECT3DINDEXBUFFER9 pIdxBuff;			// インデックスバッファへのポインタ
 	D3DXVECTOR3 pos;							// 位置
 	D3DXVECTOR3 rot;							// 向き
+	D3DXVECTOR2 tex;							// テクスチャ座標
 	D3DXMATRIX mtxWorld;						// ワールドマトリックス
 	float fRadius;								// 半径
 	int nVertical;								// 縦軸の分割数
 	int nHorizontal;							// 横軸の分割数
 	bool bUse;									// 使用状態
 }MeshDome;
+
+typedef struct MeshDome* PMESHDOME;
 
 //*****************************************************************************
 // プロトタイプ宣言

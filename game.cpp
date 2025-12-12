@@ -6,12 +6,15 @@
 //=============================================================================
 
 #include "game.h"
+#include "loadscript.h"
 #include "player.h"
 #include "camera.h"
 #include "light.h"
 #include "input.h"
 #include "sound.h"
 #include "fade.h"
+#include "effect.h"
+#include "particle.h"
 #include "pause.h"
 
 #include "model.h"
@@ -91,8 +94,18 @@ void InitGame(void)
 	// メッシュスフィアの初期化
 	InitMeshSphere();
 
+	// エフェクトの初期化処理
+	InitEffect();
+
+	// パーティクルの初期化処理
+	InitParticle();
+
 	// ポーズメニューの初期化
 	InitPause();
+
+	LoadScript(GAME_SCRIPT);
+
+	SetMotion(MOTIONTYPE_NEUTRAL, true, false, 0);
 }
 
 //========================================
@@ -134,6 +147,12 @@ void UninitGame(void)
 
 	// メッシュスフィアの終了処理
 	UninitMeshSphere();
+
+	// エフェクトの終了処理
+	UninitEffect();
+
+	// パーティクルの終了処理
+	UninitParticle();
 
 	// ポーズメニューの終了処理
 	UninitPause();
@@ -205,6 +224,12 @@ void UpdateGame(void)
 
 		// メッシュスフィアの更新処理
 		UpdateMeshSphere();
+
+		// エフェクトの更新処理
+		UpdateEffect();
+
+		// パーティクルの更新処理
+		UpdateParticle();
 	}
 
 	if (g_nextgameState == GAMESTATE_CLEAR || g_nextgameState == GAMESTATE_GAMEOVER)
@@ -275,6 +300,9 @@ void DrawGame(void)
 
 	// メッシュスフィアの描画処理
 	DrawMeshSphere();
+
+	// エフェクトの描画処理
+	DrawEffect();
 
 	if (g_bPause == true)
 	{ // ポーズ中なら

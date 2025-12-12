@@ -30,7 +30,7 @@ MeshField g_ameshfield[MAX_MESHFIELD];									// メッシュフィールドの情報
 
 const char* c_pMeshFieldTextureName[MESHFIELDTYPE_MAX] =
 {
-	"data\\TEXTURE\\ice000.jpg",
+	"data\\TEXTURE\\ice001.jpg",
 	"data\\TEXTURE\\ice000.jpg",
 	"data\\TEXTURE\\sea000.png",
 };
@@ -61,7 +61,7 @@ void InitMeshField(void)
 		g_ameshfield[nCntMeshField].bUse = false;
 	}
 
-	SetMeshField(D3DXVECTOR3(-1500.0f, 0.0f, 1500.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), MESHFIELD_WIDTH, MESHFIELD_DEPTH, MESHFIELD_SPLIT_WIDHT, MESHFIELD_SPLIT_WIDHT, MESHFIELDTYPE_ICE);
+	SetMeshField(D3DXVECTOR3(-1500.0f, 0.0f, 1500.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), 300.0f, 300.0f, 10, 10, MESHFIELDTYPE_ICE);
 	SetMeshField(D3DXVECTOR3(0.0f, 10.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), MESHFIELD_WIDTH, MESHFIELD_DEPTH, 5, 5, MESHFIELDTYPE_ICE);
 	SetMeshField(D3DXVECTOR3(-5000.0f, -50.0f, 5000.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), MESHFIELD_WIDTH, MESHFIELD_DEPTH, 100, 100, MESHFIELDTYPE_SEA);
 
@@ -359,9 +359,9 @@ PMESHFIELD CollisionMeshField(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTO
 					(vecLineB.z * vecToPosB.x) - (vecLineB.x * vecToPosB.z) < 0 &&
 					(vecLineC.z * vecToPosC.x) - (vecLineC.x * vecToPosC.z) < 0)
 				{// もし全ての境界線ベクトルの内側にいたら
-					pVtx[nCntVtxWidht].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
-					pVtx[nCntVtxWidht + pMeshField->nSplitWidth].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
-					pVtx[nCntVtxWidht + pMeshField->nSplitWidth + 1].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
+					//pVtx[nCntVtxWidht].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
+					//pVtx[nCntVtxWidht + pMeshField->nSplitWidth].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
+					//pVtx[nCntVtxWidht + pMeshField->nSplitWidth + 1].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
 
 					//SetEffect(PosA, INIT_D3DXVEC3, D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f), 15.0f, 0.0f, 0.0f, 1);
 					//SetEffect(PosB, INIT_D3DXVEC3, D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f), 15.0f, 0.0f, 0.0f, 1);
@@ -406,9 +406,9 @@ PMESHFIELD CollisionMeshField(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTO
 					(vecLineB.z * vecToPosB.x) - (vecLineB.x * vecToPosB.z) > 0 &&
 					(vecLineC.z * vecToPosC.x) - (vecLineC.x * vecToPosC.z) > 0)
 				{// もし全ての境界線ベクトルの内側にいたら
-					pVtx[nCntVtxWidht].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
-					pVtx[nCntVtxWidht + 1].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
-					pVtx[nCntVtxWidht + pMeshField->nSplitWidth + 1].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
+					//pVtx[nCntVtxWidht].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
+					//pVtx[nCntVtxWidht + 1].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
+					//pVtx[nCntVtxWidht + pMeshField->nSplitWidth + 1].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
 
 					D3DXVECTOR3 vecNor = { (vecLineB.y * -vecLineA.z) - (vecLineB.z * -vecLineA.y), (vecLineB.z * -vecLineA.x) - (vecLineB.x * -vecLineA.z), (vecLineB.x * -vecLineA.y) - (vecLineB.y * -vecLineA.x) };
 					

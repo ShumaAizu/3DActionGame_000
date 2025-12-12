@@ -60,10 +60,11 @@ typedef struct
 	D3DXVECTOR3 posOld;							// 過去の位置
 	D3DXVECTOR3 rot;							// 向き
 	D3DXVECTOR3 move;							// 移動量
+	int nChangeCounter;							// モード切替カウンター
 	float fSpeed;								// 速度
-	int nIdxShadow;								// 影のインデックス
 	bool bJump;									// ジャンプ状態
 	float fMoveKeyboard;						// キーボード操作による移動量
+	int nIdxShadow;								// 影のインデックス
 	PMESHFIELD pRideField;						// 乗っているフィールド
 
 	D3DXMATRIX mtxWorld;						// ワールドマトリックス
@@ -79,7 +80,8 @@ void DrawPlayer(void);
 Player* GetPlayer(void);
 void SetMotion(MOTIONTYPE motiontype, bool bLoopMotion, bool bBlendMotion, int nFrameBlend);
 void UpdateMotion(void);
-void LoadPlayer(void);
+void LoadPartsPlayer(const char* pPartsFile);
+void LoadCharacterPlayer(D3DXVECTOR3 pos, D3DXVECTOR3 rot, int nIdxModel, int nIdxModelParent);
 void LoadMotion(bool bLoop, int nNumKey, KEY_INFO* pKeyInfo, int nMotion);
 
 #endif

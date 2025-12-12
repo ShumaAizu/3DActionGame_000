@@ -363,12 +363,6 @@ HRESULT Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 	// デバッグ表示の初期化処理
 	InitDebugProc();
 
-	// エフェクトの初期化処理
-	InitEffect();
-
-	// パーティクルの初期化処理
-	InitParticle();
-
 	//ShowCursor(false);
 
 	return S_OK;
@@ -389,12 +383,6 @@ void Uninit(void)
 
 	// デバッグ表示の終了処理
 	UninitDebugProc();
-
-	// エフェクトの終了処理
-	UninitEffect();
-
-	// パーティクルの終了処理
-	UninitParticle();
 
 	// タイトル画面の終了処理
 	UninitTitle();
@@ -463,12 +451,6 @@ void Update(void)
 	// カメラの更新処理
 	UpdateCamera();
 
-	// エフェクトの更新処理
-	UpdateEffect();
-
-	// パーティクルの更新処理
-	UpdateParticle();
-
 	switch (g_mode)
 	{
 		// タイトルモード
@@ -536,9 +518,6 @@ void Draw(void)
 		//	DrawRanking();
 		//	break;
 		}
-
-		// エフェクトの描画処理
-		DrawEffect();
 
 		// フェードの描画処理
 		DrawFade();

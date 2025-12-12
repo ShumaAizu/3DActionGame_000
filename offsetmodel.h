@@ -15,9 +15,9 @@
 // マクロ定義
 //*****************************************************************************
 #define MAX_OFFSETMODELTEX			(16)		// 読み込むテクスチャの最大数
-#define MAX_OFFSETMODEL				(2)			// パーツの最大数
-#define MAX_KEY						(2)			// キーの最大数
-#define MAX_MOTION					(2)			// モーションの最大数
+#define MAX_OFFSETMODEL				(16)		// パーツの最大数
+#define MAX_KEY						(16)		// キーの最大数
+#define MAX_MOTION					(16)		// モーションの最大数
 
 //*****************************************************************************
 // モーションの種類
@@ -73,13 +73,14 @@ typedef struct
 	LPD3DXMESH pMesh;										// メッシュへのポインタ
 	LPD3DXBUFFER pBuffMat;									// マテリアルへのポインタ
 	DWORD dwNumMat;											// マテリアルの数
-	int nIdxModelParent;									// 親モデルのインデックス
 
 	D3DXVECTOR3 pos;										// 位置
 	D3DXVECTOR3 OffPos;										// オフセット位置
 	D3DXVECTOR3 rot;										// 向き
 	D3DXVECTOR3 OffRot;										// オフセット向き
 	D3DXMATRIX mtxWorld;									// ワールドマトリックス
+	int nIdxModel;											// モデルのインデックス
+	int nIdxModelParent;									// 親モデルのインデックス
 }OffSetModel;
 
 //*****************************************************************************

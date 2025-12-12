@@ -12,8 +12,8 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define MESHDOME_SPLIT_VERTICAL		(32 + 1)											// 縦の分割数
-#define MESHDOME_SPLIT_HORIZONTAL	(32 + 1)											// 横の分割数
+#define MESHDOME_SPLIT_VERTICAL		(64 + 1)											// 縦の分割数
+#define MESHDOME_SPLIT_HORIZONTAL	(64 + 1)											// 横の分割数
 #define MESHDOME_ANGLE_VERTICAL		(D3DX_PI / (MESHDOME_SPLIT_VERTICAL))				// 縦の分割数に応じた角度
 #define MESHDOME_ANGLE_HORIZONTAL	(D3DX_PI / (MESHDOME_SPLIT_HORIZONTAL - 1))			// 横の分割数に応じた角度
 
@@ -33,7 +33,7 @@ void InitMeshDome(void)
 
 	// テクスチャの読み込み
 	D3DXCreateTextureFromFile(pDevice,
-		"data\\TEXTURE\\sky002.jpg",
+		"data\\TEXTURE\\sky004.jpg",
 		&g_pTextureMeshDome);
 
 	for (int nCntMeshDome = 0; nCntMeshDome < MAX_MESHDOME; nCntMeshDome++)
@@ -42,115 +42,10 @@ void InitMeshDome(void)
 		g_ameshdome[nCntMeshDome].pIdxBuff = NULL;
 		g_ameshdome[nCntMeshDome].pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 		g_ameshdome[nCntMeshDome].rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+		g_ameshdome[nCntMeshDome].tex = D3DXVECTOR2(0.0f, 0.0f);
 		g_ameshdome[nCntMeshDome].fRadius = 15000.0f;
 		g_ameshdome[nCntMeshDome].bUse = false;
-
-		//// 頂点バッファの生成
-		//pDevice->CreateVertexBuffer(sizeof(VERTEX_3D) * (MESHDOME_SPLIT_VERTICAL - 1) * MESHDOME_SPLIT_HORIZONTAL,
-		//	D3DUSAGE_WRITEONLY,
-		//	FVF_VERTEX_3D,
-		//	D3DPOOL_MANAGED,
-		//	&g_ameshdome[nCntMeshDome].pVtxBuff,
-		//	NULL);
 	}
-
-	//// 初期化
-	//VERTEX_3D *pVtx;			// 頂点情報へのポインタ
-
-	//for (int nCntMeshDome = 0; nCntMeshDome < MAX_MESHDOME; nCntMeshDome++)
-	//{
-	//	float fAngleVertical = (D3DX_PI * 0.5f) - MESHDOME_ANGLE_VERTICAL;
-
-	//	// 頂点バッファをロックし,頂点情報へのポインタを取得
-	//	g_ameshdome[nCntMeshDome].pVtxBuff->Lock(0, 0, (void**)&pVtx, 0);
-
-	//	for (int nCntVtxVertical = 0; nCntVtxVertical < MESHDOME_SPLIT_VERTICAL - 1; nCntVtxVertical++)
-	//	{
-	//		D3DXVECTOR3 diff;
-	//		D3DXVECTOR3 vecDir;
-	//		float fRadius;
-	//		float fAngleHorizontal = -D3DX_PI;
-
-	//		diff = D3DXVECTOR3(sinf(0.0f) * g_ameshdome[nCntMeshDome].fRadius, cosf(fAngleVertical) * g_ameshdome[nCntMeshDome].fRadius, 0.0f);
-
-	//		fRadius = SQRTF(diff.x, diff.y);
-
-	//		for (int nCntVtxHorizontal = 0; nCntVtxHorizontal < MESHDOME_SPLIT_HORIZONTAL; nCntVtxHorizontal++)
-	//		{
-	//			// 頂点座標の設定
-	//			pVtx[nCntVtxHorizontal].pos = D3DXVECTOR3(sinf(fAngleHorizontal) * fRadius, sinf(fAngleVertical) * g_ameshdome[nCntMeshDome].fRadius, cosf(fAngleHorizontal) * fRadius);
-
-	//			// 法線ベクトルの設定
-	//			vecDir = D3DXVECTOR3(pVtx[nCntVtxHorizontal].pos.x, 0.0f, pVtx[nCntVtxHorizontal].pos.z);
-	//			D3DXVec3Normalize(&vecDir, &vecDir);
-	//			pVtx[nCntVtxHorizontal].nor = vecDir;
-
-	//			// 頂点カラーの設定
-	//			pVtx[nCntVtxHorizontal].col = D3DXCOLOR(0.65f, 0.85f, 1.0f, 1.0f);
-
-	//			// テクスチャ座標の設定
-	//			pVtx[nCntVtxHorizontal].tex = D3DXVECTOR2(1.0f * nCntVtxHorizontal, 1.0f * nCntVtxVertical);
-
-	//			// 角度を加算
-	//			fAngleHorizontal += MESHDOME_ANGLE_HORIZONTAL * 2;
-	//		}
-
-	//		// 角度を減算
-	//		fAngleVertical += -MESHDOME_ANGLE_VERTICAL * 0.5f;
-
-	//		// ポインタを進める
-	//		pVtx += MESHDOME_SPLIT_HORIZONTAL;
-	//	}
-
-	//	// 頂点バッファをアンロックする
-	//	g_ameshdome[nCntMeshDome].pVtxBuff->Unlock();
-	//}
-
-	//for (int nCntMeshDome = 0; nCntMeshDome < MAX_MESHDOME; nCntMeshDome++)
-	//{
-	//	// インデックスバッファの設定
-	//	pDevice->CreateIndexBuffer(sizeof(WORD) * ((MESHDOME_SPLIT_HORIZONTAL) * 2 * (MESHDOME_SPLIT_VERTICAL - 1) + ((MESHDOME_SPLIT_VERTICAL - 2) * 2)),
-	//		D3DUSAGE_WRITEONLY,
-	//		D3DFMT_INDEX16,
-	//		D3DPOOL_MANAGED,
-	//		&g_ameshdome[nCntMeshDome].pIdxBuff,
-	//		NULL);
-
-	//	WORD* pIdx;		// インデックス情報へのポインタ
-
-	//	int nCntIdx = 0;
-
-	//	// インデックスバッファをロックし、頂点情報へのポインタを取得
-	//	g_ameshdome[nCntMeshDome].pIdxBuff->Lock(0, 0, (void**)&pIdx, 0);
-
-	//	for (int nCntIdxVertical = 0; nCntIdxVertical < MESHDOME_SPLIT_VERTICAL - 2; nCntIdxVertical++)
-	//	{
-	//		for (int nCntIdxHorizontal = 0; nCntIdxHorizontal < MESHDOME_SPLIT_HORIZONTAL; nCntIdxHorizontal++)
-	//		{
-	//			if (nCntIdxVertical != 0 && nCntIdxHorizontal == 0)
-	//			{// 高さが最初の行以外かつ幅が最初の行
-	//				pIdx[0] = (MESHDOME_SPLIT_HORIZONTAL * (nCntIdxVertical + 1)) + nCntIdxHorizontal;
-
-	//				pIdx++;
-	//			}
-
-	//			pIdx[0] = (MESHDOME_SPLIT_HORIZONTAL * (nCntIdxVertical + 1)) + nCntIdxHorizontal;
-	//			pIdx[1] = MESHDOME_SPLIT_HORIZONTAL * nCntIdxVertical + nCntIdxHorizontal;
-
-	//			pIdx += 2;
-
-	//			if (nCntIdxVertical != MESHDOME_SPLIT_HORIZONTAL - 2 && nCntIdxHorizontal == MESHDOME_SPLIT_HORIZONTAL - 1)
-	//			{// 高さが最後の行以外かつ幅が最後の行
-	//				pIdx[0] = MESHDOME_SPLIT_HORIZONTAL * nCntIdxVertical + nCntIdxHorizontal;
-
-	//				pIdx++;
-	//			}
-	//		}
-	//	}
-
-	//	// インデックスバッファをアンロックする
-	//	g_ameshdome[nCntMeshDome].pIdxBuff->Unlock();
-	//}
 
 	SetMeshDome(D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), 5000.0f, MESHDOME_SPLIT_VERTICAL - 1, MESHDOME_SPLIT_HORIZONTAL - 1);
 	//SetMeshDome(D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), 2500.0f, MESHDOME_SPLIT_VERTICAL - 1, MESHDOME_SPLIT_HORIZONTAL - 1);
@@ -194,7 +89,7 @@ void DrawMeshDome(void)
 	LPDIRECT3DDEVICE9 pDevice = GetDevice();	// デバイスの取得
 	D3DXMATRIX mtxRot, mtxTrans;				// 計算用マトリックス
 
-	pDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
+	pDevice->SetRenderState(D3DRS_LIGHTING, FALSE);		// ライトを無効にする
 
 	// アルファテストを有効にする
 	pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);		// アルファテストを有効にする
@@ -242,7 +137,7 @@ void DrawMeshDome(void)
 		}
 	}
 
-	pDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
+	pDevice->SetRenderState(D3DRS_LIGHTING, TRUE);		// ライトを有効にする
 
 	// アルファテストを無効にする
 	pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);		// アルファテストを無効化
@@ -255,64 +150,40 @@ void DrawMeshDome(void)
 //=============================================================================
 void UpdateMeshDome(void)
 {
-	//// 初期化
-	//VERTEX_3D* pVtx;			// 頂点情報へのポインタ
+	PMESHDOME pMeshDome = &g_ameshdome[0];
 
-	//MeshDome* pMeshDome = &g_ameshdome[0];
-	//for (int nCntMeshDome = 0; nCntMeshDome < MAX_MESHDOME; nCntMeshDome++, pMeshDome++)
-	//{
-	//	if (pMeshDome->bUse == false)
-	//	{
-	//		continue;
-	//	}
+	for (int nCntMeshDome = 0; nCntMeshDome < MAX_MESHDOME; nCntMeshDome++, pMeshDome++)
+	{
+		if (pMeshDome->bUse == false)
+		{
+			continue;
+		}
 
-	//	float fAngleVertical = (D3DX_PI * 0.5f) - (D3DX_PI / pMeshDome->nVertical);
+		pMeshDome->tex.x += 0.00025f;
 
-	//	// 頂点バッファをロックし,頂点情報へのポインタを取得
-	//	g_ameshdome[nCntMeshDome].pVtxBuff->Lock(0, 0, (void**)&pVtx, 0);
+		VERTEX_3D* pVtx;			// 頂点情報へのポインタ
 
-	//	for (int nCntVtxVertical = 0; nCntVtxVertical < pMeshDome->nVertical - 1; nCntVtxVertical++)
-	//	{
-	//		D3DXVECTOR3 diff;
-	//		D3DXVECTOR3 vecDir;
-	//		float fRadius;
-	//		float fAngleHorizontal = -D3DX_PI;
+		// 頂点バッファをロックし,頂点情報へのポインタを取得
+		pMeshDome->pVtxBuff->Lock(0, 0, (void**)&pVtx, 0);
 
-	//		diff = D3DXVECTOR3(sinf(0.0f) * g_ameshdome[nCntMeshDome].fRadius, cosf(fAngleVertical) * g_ameshdome[nCntMeshDome].fRadius, cosf(0.0f) * g_ameshdome[nCntMeshDome].fRadius);
+		float fAngleVertical = (D3DX_PI * 0.5f) - (D3DX_PI / pMeshDome->nVertical);
 
-	//		fRadius = SQRTF(diff.x, diff.y);
+		for (int nCntVtxVertical = 0; nCntVtxVertical < pMeshDome->nVertical - 1; nCntVtxVertical++)
+		{
+			for (int nCntVtxHorizontal = 0; nCntVtxHorizontal < pMeshDome->nHorizontal; nCntVtxHorizontal++)
+			{
+				// テクスチャ座標の設定
+				pVtx[nCntVtxHorizontal].tex = D3DXVECTOR2((1.0f / (pMeshDome->nHorizontal / 2)) * nCntVtxHorizontal + pMeshDome->tex.x, (pMeshDome->tex.y / pMeshDome->nVertical) * nCntVtxVertical);
+			}
 
-	//		for (int nCntVtxHorizontal = 0; nCntVtxHorizontal < pMeshDome->nHorizontal; nCntVtxHorizontal++)
-	//		{
-	//			// 頂点座標の設定
-	//			pVtx[nCntVtxHorizontal].pos = D3DXVECTOR3(sinf(fAngleHorizontal) * fRadius, sinf(fAngleVertical) * g_ameshdome[nCntMeshDome].fRadius, cosf(fAngleHorizontal) * fRadius);
+			// ポインタを進める
+			pVtx += pMeshDome->nHorizontal;
+		}
 
-	//			// 法線ベクトルの設定
-	//			vecDir = D3DXVECTOR3(pVtx[nCntVtxHorizontal].pos.x, 0.0f, pVtx[nCntVtxHorizontal].pos.z);
-	//			D3DXVec3Normalize(&vecDir, &vecDir);
-	//			pVtx[nCntVtxHorizontal].nor = vecDir;
+		// 頂点バッファをアンロックする
+		pMeshDome->pVtxBuff->Unlock();
 
-	//			// 頂点カラーの設定
-	//			pVtx[nCntVtxHorizontal].col = D3DXCOLOR(0.65f, 0.85f, 1.0f, 1.0f);
-
-	//			// テクスチャ座標の設定
-	//			pVtx[nCntVtxHorizontal].tex = D3DXVECTOR2(1.0f * nCntVtxHorizontal, 1.0f * nCntVtxVertical);
-
-	//			// 角度を加算
-	//			fAngleHorizontal += (D3DX_PI / (pMeshDome->nHorizontal - 1)) * 2.0f;	// 合計6.28加算したいので倍にする
-	//		}
-
-	//		// 角度を減算
-	//		fAngleVertical += -(D3DX_PI / pMeshDome->nVertical) * 0.5f;			// 半円で留めたいので半分にして減算
-
-	//		// ポインタを進める
-	//		pVtx += pMeshDome->nHorizontal;
-	//	}
-
-	//	// 頂点バッファをアンロックする
-	//	g_ameshdome[nCntMeshDome].pVtxBuff->Unlock();
-	//}
-
+	}
 }
 
 //=============================================================================
@@ -323,7 +194,7 @@ void SetMeshDome(D3DXVECTOR3 pos, D3DXVECTOR3 rot, float fRadius, int nVertical,
 	// デバイスの取得
 	LPDIRECT3DDEVICE9 pDevice = GetDevice();
 
-	MeshDome* pMeshDome = &g_ameshdome[0];
+	PMESHDOME pMeshDome = &g_ameshdome[0];
 
 	for (int nCntMeshDome = 0; nCntMeshDome < MAX_MESHDOME; nCntMeshDome++, pMeshDome++)
 	{
@@ -339,6 +210,7 @@ void SetMeshDome(D3DXVECTOR3 pos, D3DXVECTOR3 rot, float fRadius, int nVertical,
 		// メッシュドームの設定
 		pMeshDome->pos = pos;
 		pMeshDome->rot = rot;
+		pMeshDome->tex = D3DXVECTOR2(1.0f, 1.0f);
 		pMeshDome->fRadius = fRadius;
 		pMeshDome->nVertical = nVertical;
 		pMeshDome->nHorizontal = nHorizontal;
@@ -354,10 +226,10 @@ void SetMeshDome(D3DXVECTOR3 pos, D3DXVECTOR3 rot, float fRadius, int nVertical,
 		// 初期化
 		VERTEX_3D* pVtx;			// 頂点情報へのポインタ
 
-		float fAngleVertical = (D3DX_PI * 0.5f) - (D3DX_PI / nVertical);
-
 		// 頂点バッファをロックし,頂点情報へのポインタを取得
 		pMeshDome->pVtxBuff->Lock(0, 0, (void**)&pVtx, 0);
+
+		float fAngleVertical = (D3DX_PI * 0.5f) - (D3DX_PI / nVertical);
 
 		for (int nCntVtxVertical = 0; nCntVtxVertical < nVertical - 1; nCntVtxVertical++)
 		{
@@ -381,10 +253,10 @@ void SetMeshDome(D3DXVECTOR3 pos, D3DXVECTOR3 rot, float fRadius, int nVertical,
 				pVtx[nCntVtxHorizontal].nor = vecDir;
 
 				// 頂点カラーの設定
-				pVtx[nCntVtxHorizontal].col = D3DXCOLOR(0.65f, 0.85f, 1.0f, 1.0f);
+				pVtx[nCntVtxHorizontal].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
 
 				// テクスチャ座標の設定
-				pVtx[nCntVtxHorizontal].tex = D3DXVECTOR2((1.0f / nHorizontal) * nCntVtxHorizontal, (1.0f / nVertical) * nCntVtxVertical);
+				pVtx[nCntVtxHorizontal].tex = D3DXVECTOR2((1.0f / (nHorizontal / 2)) * nCntVtxHorizontal, (1.0f / nVertical) * nCntVtxVertical);
 
 				// 角度を加算
 				fAngleHorizontal += (D3DX_PI / (nHorizontal - 1)) * 2.0f;	// 合計6.28加算したいので倍にする
