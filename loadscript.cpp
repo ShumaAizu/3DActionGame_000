@@ -99,6 +99,8 @@ HRESULT LoadScript(const char* pScriptFileName)
 			break;
 		}
 	}
+
+	return S_OK;
 }
 
 //=============================================================================

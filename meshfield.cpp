@@ -62,7 +62,6 @@ void InitMeshField(void)
 	}
 
 	SetMeshField(D3DXVECTOR3(-1500.0f, 0.0f, 1500.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), 300.0f, 300.0f, 10, 10, MESHFIELDTYPE_ICE);
-	SetMeshField(D3DXVECTOR3(0.0f, 10.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), MESHFIELD_WIDTH, MESHFIELD_DEPTH, 5, 5, MESHFIELDTYPE_ICE);
 	SetMeshField(D3DXVECTOR3(-5000.0f, -50.0f, 5000.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), MESHFIELD_WIDTH, MESHFIELD_DEPTH, 100, 100, MESHFIELDTYPE_SEA);
 
 }
@@ -375,13 +374,13 @@ PMESHFIELD CollisionMeshField(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTO
 					// 高さ
 					float fPosY = PosA.y - (((vecNor.x * pPos->x) - (vecNor.x * PosA.x)) + ((vecNor.z * pPos->z) - (vecNor.z * PosA.z)) / vecNor.y);
 
+					PrintDebugProc("乗っている三角形 = { %d %d %d }\n", nCntVtxWidht, nCntVtxDepth, 1);
+
 					if (pPos->y <= fPosY)
 					{
 						pPos->y = fPosY;
+						return pMeshField;
 					}
-
-					PrintDebugProc("乗っている三角形 = { %d %d %d }\n", nCntVtxWidht, nCntVtxDepth, 1);
-					return pMeshField;
 				}
 
 				// 位置と向きを反映した頂点座標を入れる
@@ -416,13 +415,13 @@ PMESHFIELD CollisionMeshField(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTO
 
 					float fPosY = PosA.y - (((vecNor.x * pPos->x) - (vecNor.x * PosA.x)) + ((vecNor.z * pPos->z) - (vecNor.z * PosA.z)) / vecNor.y);
 
+					PrintDebugProc("乗っている三角形 = { %d %d %d }\n", nCntVtxWidht, nCntVtxDepth, 2);
+
 					if (pPos->y <= fPosY)
 					{
 						pPos->y = fPosY;
+						return pMeshField;
 					}
-
-					PrintDebugProc("乗っている三角形 = { %d %d %d }\n", nCntVtxWidht, nCntVtxDepth, 2);
-					return pMeshField;
 				}
 
 			}

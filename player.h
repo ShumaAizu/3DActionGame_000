@@ -24,9 +24,10 @@
 //*****************************************************************************
 typedef enum
 {
-	PLAYERSTATE_NUETRAL = 0,
-	PLAYERSTATE_MOVE,
-	PLAYERSTATE_JUMP,
+	PLAYERSTATE_NUETRAL = 0,		// 通常状態
+	PLAYERSTATE_MOVE,				// 移動状態
+	PLAYERSTATE_JUMP,				// ジャンプ状態
+	PLAYERSTATE_ACTIONMOVE,			// アクション移動状態
 	PLAYERSTATE_MAX
 }PLAYERSTATE;
 
@@ -60,8 +61,10 @@ typedef struct
 	D3DXVECTOR3 posOld;							// 過去の位置
 	D3DXVECTOR3 rot;							// 向き
 	D3DXVECTOR3 move;							// 移動量
+	PLAYERSTATE	state;							// 状態
 	int nChangeCounter;							// モード切替カウンター
 	float fSpeed;								// 速度
+	float fInertia;								// 慣性
 	bool bJump;									// ジャンプ状態
 	float fMoveKeyboard;						// キーボード操作による移動量
 	int nIdxShadow;								// 影のインデックス

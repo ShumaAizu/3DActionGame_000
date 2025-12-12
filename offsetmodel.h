@@ -29,6 +29,7 @@ typedef enum
 	MOTIONTYPE_ACTION,			// アクション
 	MOTIONTYPE_JUMP,			// ジャンプ
 	MOTIONTYPE_LANDING,			// 着地
+	MOTIONTYPE_ACTIONMOVE,		// アクション移動
 	MOTIONTYPE_MAX
 }MOTIONTYPE;
 

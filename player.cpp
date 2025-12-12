@@ -202,9 +202,23 @@ void UpdatePlayer(void)
 		fRotMove = g_player.rot.y - D3DX_PI;									// 今の向き
 		fRotDest = atan2f(KeyboardMove.x, KeyboardMove.z) + pCamera->rot.y;		// 目的地への向き
 
+		if (g_player.state != PLAYERSTATE_MOVE && g_player.state != PLAYERSTATE_JUMP)
+		{
+			SetMotion(MOTIONTYPE_MOVE, true, true, 10);
+			g_player.state = PLAYERSTATE_MOVE;
+		}
+
 		// 移動量の更新
 		g_player.move.x += sinf(fRotMove) * g_player.fSpeed;
 		g_player.move.z += cosf(fRotMove) * g_player.fSpeed;
+	}
+	else
+	{
+		if (g_player.state != PLAYERSTATE_NUETRAL && g_player.state != PLAYERSTATE_JUMP)
+		{
+			SetMotion(MOTIONTYPE_NEUTRAL, true, true, 10);
+			g_player.state = PLAYERSTATE_NUETRAL;
+		}
 	}
 
 	// 補正
@@ -227,7 +241,8 @@ void UpdatePlayer(void)
 
 	if (GetKeyboardRepeat(DIK_SPACE) == true && g_player.bJump == false)
 	{
-		SetBullet(g_player.pos, g_player.rot);
+		SetMotion(MOTIONTYPE_JUMP, true, false, 10);
+		g_player.state = PLAYERSTATE_JUMP;
 		g_player.move.y = PLAYER_JUMP;
 		g_player.bJump = true;
 	}
@@ -238,25 +253,8 @@ void UpdatePlayer(void)
 	g_player.move.y += GRAVITY;
 	g_player.pos += g_player.move;		// 位置を更新
 
-	if (g_player.pRideField != NULL)
-	{
-		switch (g_player.pRideField->type)
-		{
-		case MESHFIELDTYPE_ICE:
-			//慣性を更新
-			g_player.move.x += (0.0f - g_player.move.x) * ICE_INERTIA;
-			g_player.move.z += (0.0f - g_player.move.z) * ICE_INERTIA;
-			break;
-
-		case MESHFIELDTYPE_SNOW:
-			g_player.move.x += (0.0f - g_player.move.x) * SNOW_INERTIA;
-			g_player.move.z += (0.0f - g_player.move.z) * SNOW_INERTIA;
-			break;
-
-		case MESHFIELDTYPE_SEA:
-			break;
-		}
-	}
+	g_player.move.x += (0.0f - g_player.move.x) * g_player.fInertia;
+	g_player.move.z += (0.0f - g_player.move.z) * g_player.fInertia;
 
 	//g_player.move.x = 0.0f;
 	//g_player.move.z = 0.0f;
@@ -272,21 +270,41 @@ void UpdatePlayer(void)
 
 	g_player.pRideField = CollisionMeshField(&g_player.pos, &g_player.posOld, &g_player.move);
 
+	if (g_player.pRideField != NULL)
+	{// もしフィールド上にいたら
+		//　慣性を設定
+		switch (g_player.pRideField->type)
+		{
+		case MESHFIELDTYPE_ICE:
+			g_player.fInertia = ICE_INERTIA;
+			break;
+
+		case MESHFIELDTYPE_SNOW:
+			g_player.fInertia = SNOW_INERTIA;
+			break;
+
+		case MESHFIELDTYPE_SEA:
+			g_player.pos = D3DXVECTOR3(0.0f, 0.0f, -1500.0f);
+			break;
+		}
+
+		if (g_player.bJump == true)
+		{
+			SetMotion(MOTIONTYPE_LANDING, false, true, 10);
+			g_player.state = PLAYERSTATE_NUETRAL;
+		}
+	}
+
 	// モデルとの当たり判定
 	CollisionModel(&g_player.pos, &g_player.posOld, &g_player.move, D3DXVECTOR3(10.0f, 10.0f, 10.0f), D3DXVECTOR3(10.0f, 10.0f, 10.0f));
 
-	CollisionMeshModelTest(&g_player.pos, &g_player.posOld);
+	//CollisionMeshModelTest(&g_player.pos, &g_player.posOld);
 
 	// 影の位置を更新
 	SetPositionShadow(g_player.nIdxShadow, D3DXVECTOR3(g_player.pos.x, g_player.pos.y - g_player.pos.y, g_player.pos.z));
 
 	// 全モデル更新
 	UpdateMotion();
-
-	//if (GetKeyboardTrigger(DIK_5) == true)
-	//{
-	//	SetEffect(D3DXVECTOR3(0.0f, 50.0f, 0.0f), INIT_D3DXVEC3, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), 15.0f, 0.05f, 0.0f, 100);
-	//}
 
 	if (GetKeyboardTrigger(DIK_5) == true)
 	{
@@ -310,7 +328,7 @@ void UpdatePlayer(void)
 
 	if (GetKeyboardTrigger(DIK_9) == true)
 	{
-		SetMotion(MOTIONTYPE_MOVE, true, true, 10);
+		SetMotion(MOTIONTYPE_ACTIONMOVE, true, true, 10);
 	}
 }
 

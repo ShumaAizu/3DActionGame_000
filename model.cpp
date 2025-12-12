@@ -144,7 +144,7 @@ void InitModel(void)
 	{
 		g_amodel[nCntModel].pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 		g_amodel[nCntModel].rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-		g_amodel[nCntModel].bCollision = false;
+		g_amodel[nCntModel].bCollision = true;
 		g_amodel[nCntModel].bUse = false;
 	}
 
