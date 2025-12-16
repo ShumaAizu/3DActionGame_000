@@ -9,12 +9,13 @@
 #include "input.h"
 #include "debugproc.h"
 #include "sound.h"
+#include "loadscript.h"
 #include "effect.h"
 #include "particle.h"
 #include "title.h"
 #include "game.h"
-//#include "result.h"
-//#include "ranking.h"
+#include "result.h"
+#include "ranking.h"
 #include "fade.h"
 
 #include "field.h"
@@ -56,7 +57,7 @@ void Draw(void);
 //*****************************************************************************
 LPDIRECT3D9 g_pD3D = NULL;					// Direct3Dオブジェクトへのポインタ
 LPDIRECT3DDEVICE9 g_pD3DDevice = NULL;		// Direct3Dデバイスへのポインタ
-MODE g_mode = MODE_GAME;					// モード情報
+MODE g_mode = MODE_TITLE;					// モード情報
 int g_nCountFPS = 0;						// FPSカウンタ
 int g_nFPS = 60;							// 現在の最大FPS
 bool g_isFullscreen = false;				// フルスクリーンの使用状況
@@ -314,7 +315,7 @@ HRESULT Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 	}
 
 	// レンダーステートの設定
-	g_pD3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);				// カリングの設定
+	g_pD3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);				// カリングの設定
 	g_pD3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);				//
 	g_pD3DDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);		// アルファブレンドの設定
 	g_pD3DDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);	//
@@ -354,6 +355,18 @@ HRESULT Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 		return E_FAIL;
 	}
 
+	// カメラの初期化
+	InitCamera();
+
+	// ライトの初期化
+	InitLight();
+
+	// モデルの初期化処理
+	InitModel();
+
+	// ステージ読み込み
+	LoadStage(STAGE_SCRIPT);
+
 	// サウンドの初期化処理
 	InitSound(hWnd);
 
@@ -384,17 +397,26 @@ void Uninit(void)
 	// デバッグ表示の終了処理
 	UninitDebugProc();
 
+	// カメラの終了処理
+	UninitCamera();
+
+	// ライトの終章処理
+	UninitLight();
+
+	// モデルの終了処理
+	UninitModel();
+
 	// タイトル画面の終了処理
 	UninitTitle();
 
 	// ゲーム画面の終了処理
 	UninitGame();
 
-	//// リザルト画面の終了処理
-	//UninitResult();
+	// リザルト画面の終了処理
+	UninitResult();
 
-	//// ランキング画面の終了処理
-	//UninitRanking();
+	// ランキング画面の終了処理
+	UninitRanking();
 
 	// フェードの終了処理
 	UninitFade();
@@ -448,6 +470,9 @@ void Update(void)
 	// マウスの更新処理
 	UpdateMouse();
 
+	// デバッグ表示の更新処理
+	UpdateDebugProc();
+
 	// カメラの更新処理
 	UpdateCamera();
 
@@ -463,15 +488,15 @@ void Update(void)
 		UpdateGame();
 		break;
 
-	//	// リザルトモード
-	//case MODE_RESULT:
-	//	UpdateResult();
-	//	break;
+		// リザルトモード
+	case MODE_RESULT:
+		UpdateResult();
+		break;
 
-	//	// ランキングモード
-	//case MODE_RANKING:
-	//	UpdateRanking();
-	//	break;
+		// ランキングモード
+	case MODE_RANKING:
+		UpdateRanking();
+		break;
 	}
 
 	// フェードの更新処理
@@ -493,8 +518,8 @@ void Draw(void)
 	{// 描画開始が成功した場合
 		// 各種オブジェクトの描画処理
 
-		// デバッグ表示の描画処理
-		DrawDebugProc();
+		// カメラの設定処理
+		SetCamera();
 
 		switch (g_mode)
 		{
@@ -508,21 +533,25 @@ void Draw(void)
 			DrawGame();
 			break;
 
-		//	// リザルトモード
-		//case MODE_RESULT:
-		//	DrawResult();
-		//	break;
+			// リザルトモード
+		case MODE_RESULT:
+			DrawResult();
+			break;
 
-		//	// ランキングモード
-		//case MODE_RANKING:
-		//	DrawRanking();
-		//	break;
+			// ランキングモード
+		case MODE_RANKING:
+			DrawRanking();
+			break;
 		}
 
 		// フェードの描画処理
 		DrawFade();
 
 #ifdef _DEBUG
+
+		// デバッグ表示の描画処理
+		DrawDebugProc();
+
 #endif // _DEBUG
 
 		// 描画終了
@@ -559,15 +588,15 @@ void SetMode(MODE mode)
 		UninitGame();
 		break;
 
-	//	// リザルトモード
-	//case MODE_RESULT:
-	//	UninitResult();
-	//	break;
+		// リザルトモード
+	case MODE_RESULT:
+		UninitResult();
+		break;
 
-	//	// ランキングモード
-	//case MODE_RANKING:
-	//	UninitRanking();
-	//	break;
+		// ランキングモード
+	case MODE_RANKING:
+		UninitRanking();
+		break;
 	}
 
 	// 新しいモードの初期化処理
@@ -583,15 +612,15 @@ void SetMode(MODE mode)
 		InitGame();
 		break;
 
-	//	// リザルトモード
-	//case MODE_RESULT:
-	//	InitResult();
-	//	break;
+		// リザルトモード
+	case MODE_RESULT:
+		InitResult();
+		break;
 
-	//	// ランキングモード
-	//case MODE_RANKING:
-	//	InitRanking();
-	//	break;
+		// ランキングモード
+	case MODE_RANKING:
+		InitRanking();
+		break;
 	}
 
 	// モードの更新
@@ -655,8 +684,6 @@ bool CrossCollision(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTOR3 posStar
 	// 法線ベクトルを算出
 	vecNor = D3DXVECTOR3(sinf((0.5f * D3DX_PI) + fAngleVecLine), 0.0f, cosf((0.5f * D3DX_PI) + fAngleVecLine));
 
-	//PrintDebugProc("vecLine = { %.2f, %.2f, %.2f }\n", vecLine.x, vecLine.y, vecLine.z);
-
 	// 比率を算出
 	fRate = ((vecToPos.z * vecMove.x) - (vecToPos.x * vecMove.z)) / ((vecLine.z * vecMove.x) - (vecLine.x * vecMove.z));
 
@@ -665,7 +692,7 @@ bool CrossCollision(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTOR3 posStar
 
 	if (fPosOldCross < -0.0000001f && fPosOldCross > -1.0f)
 	{// 誤差は切り捨て
-		fPosOldCross = ceilf(fPosOldCross);		// 負の数は切り上げ？
+		fPosOldCross = ceilf(fPosOldCross);		// 負の数は切り上げ
 	}
 
 	if ((vecLine.z * vecToPos.x) - (vecLine.x * vecToPos.z) < 0.0f &&

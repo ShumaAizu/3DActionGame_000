@@ -42,6 +42,7 @@
 #define SQRTF(X, Y)				(sqrtf(X * X + Y * Y))															// 対角線の長さ算出
 #define INIT_D3DXVEC3			(D3DXVECTOR3(0.0f, 0.0f, 0.0f))													// D3DXVECTOR3型初期化
 #define RANDAM_VEC3(X, Y, Z)	(D3DXVECTOR3((float)(rand() % X), (float)(rand() % Y), (float)(rand() % Z)))	// ランダムVECTOR3
+#define VEC3TOROT(vec3)			(vec3 * D3DX_PI)
 
 //*****************************************************************************
 // 頂点情報の構造体定義

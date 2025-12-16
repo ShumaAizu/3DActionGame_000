@@ -17,6 +17,7 @@
 #include "particle.h"
 #include "pause.h"
 
+#include "friends.h"
 #include "model.h"
 #include "billboard.h"
 #include "bullet.h"
@@ -53,9 +54,6 @@ void InitGame(void)
 	// ポーズ状態の初期化
 	g_bPause = false;
 
-	// ライトの初期化
-	InitLight();
-
 	// メッシュフィールドの初期化
 	InitMeshField();
 
@@ -65,16 +63,10 @@ void InitGame(void)
 	// プレイヤーの初期化
 	InitPlayer();
 
-	// カメラの初期化
-	InitCamera();
+	// 仲間の初期化処理
+	InitFriends();
 
 	InitBullet();
-
-	// モデルの初期化
-	InitModel();
-
-	// ビルボードの初期化
-	InitBillboard();
 
 	// 雪の初期化
 	InitSnow();
@@ -105,6 +97,8 @@ void InitGame(void)
 
 	LoadScript(GAME_SCRIPT);
 
+	LoadObject(OBJECT_SCRIPT);
+
 	SetMotion(MOTIONTYPE_NEUTRAL, true, false, 0);
 }
 
@@ -119,16 +113,13 @@ void UninitGame(void)
 	// プレイヤーの終了処理
 	UninitPlayer();
 
-	UninitBullet();
+	// 仲間の終了処理
+	UninitFriends();
 
-	// モデルの終了処理
-	UninitModel();
+	UninitBullet();
 
 	// 影の終了処理
 	UninitShadow();
-
-	// ビルボードの終了処理
-	UninitBillboard();
 
 	// 雪の終了処理
 	UninitSnow();
@@ -196,6 +187,9 @@ void UpdateGame(void)
 		// プレイヤーの更新処理
 		UpdatePlayer();
 
+		// 仲間の更新処理
+		UpdateFriends();
+
 		UpdateBullet();
 
 		// モデルの更新処理
@@ -203,9 +197,6 @@ void UpdateGame(void)
 
 		// 影の更新処理
 		UpdateShadow();
-
-		// ビルボードの更新処理
-		UpdateBillboard();
 
 		// 雪の更新処理
 		UpdateSnow();
@@ -230,6 +221,11 @@ void UpdateGame(void)
 
 		// パーティクルの更新処理
 		UpdateParticle();
+	}
+
+	if (GetKeyboardTrigger(DIK_RETURN) == true)
+	{
+		SetFade(MODE_RESULT, DEFAULT_FADESPEED, DEFAULT_FADESPEED);
 	}
 
 	if (g_nextgameState == GAMESTATE_CLEAR || g_nextgameState == GAMESTATE_GAMEOVER)
@@ -263,25 +259,22 @@ void UpdateGame(void)
 //========================================
 void DrawGame(void)
 {
-	// カメラの設定処理
-	SetCamera();
-
 	// メッシュフィールドの描画処理
 	DrawMeshField();
 
 	// プレイヤーの描画処理
 	DrawPlayer();
 
+	// 仲間の描画処理
+	DrawFriends();
+
 	DrawBullet();
 
 	// モデルの描画処理
 	DrawModel();
 
-	// 影の描画処理
-	DrawShadow();
-
-	// ビルボードの描画処理
-	DrawBillboard();
+	// エフェクトの描画処理
+	DrawEffect();
 
 	// 雪の描画処理
 	DrawSnow();
@@ -301,8 +294,8 @@ void DrawGame(void)
 	// メッシュスフィアの描画処理
 	DrawMeshSphere();
 
-	// エフェクトの描画処理
-	DrawEffect();
+	// 影の描画処理
+	DrawShadow();
 
 	if (g_bPause == true)
 	{ // ポーズ中なら

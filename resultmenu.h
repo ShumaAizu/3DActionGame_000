@@ -1,39 +1,37 @@
 //=============================================================================
 //
-//	スクリプト読み込み処理 [loadsclipt.h]
+//	リザルトメニュー処理 [resultmenu.h]
 //	Author : SHUMA AIZU
 // 
 //=============================================================================
 
-#ifndef _LOADSCRIPT_H_
-#define _LOADSCRIPT_H_
+#ifndef _RESULTMENU_H_
+#define _RESULTMENU_H_
 
 #include "main.h"
 
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define GAME_SCRIPT			"data/SCRIPTS/game.txt"		// ゲーム管理スクリプト
-#define STAGE_SCRIPT		"data/SCRIPTS/stage.txt"	// ステージ情報スクリプト
-#define OBJECT_SCRIPT		"data/SCRIPTS/object.txt"	// オブジェクト情報スクリプト
 
 //*****************************************************************************
-// オブジェクトの種類
+// リザルトメニュー
 //*****************************************************************************
 typedef enum
 {
-	OBJECTTYPE_PLAYER = 0,
-	OBJECTTYPE_FRIENDS,
-	OBJECTTYPE_MAX
-}OBJECTTYPE;
+	RESULTMENU_RESTART = 0,
+	RESULTMENU_STAGESELECT,
+	RESULTMENU_QUIT,
+	RESULTMENU_MAX
+}RESULTMENU;
 
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
-HRESULT LoadScript(const char* pScriptFileName);
-HRESULT LoadMotionInfo(const char* pMotionFileName, OBJECTTYPE type);
-HRESULT LoadStage(const char* pStageFileName);
-HRESULT LoadObject(const char* pObjectFileName);
-void LoadEnableString(char* aStrCpy, char* pStart);
+void InitResultMenu(void);
+void UninitResultMenu(void);
+void UpdateResultMenu(void);
+void DrawResultMenu(void);
+void SetResultMenu(RESULTMENU resultmenu);
 
-#endif	_LOADSCRIPT_H_
+#endif // _RESULTMENU_H_

@@ -23,6 +23,7 @@
 typedef struct
 {
 	LPDIRECT3DVERTEXBUFFER9 pVtxBuff;			// 頂点バッファへのポインタ
+	LPDIRECT3DVERTEXBUFFER9 pVtxFanBuff;		// 頂点バッファへのポインタ
 	LPDIRECT3DINDEXBUFFER9 pIdxBuff;			// インデックスバッファへのポインタ
 	D3DXVECTOR3 pos;							// 位置
 	D3DXVECTOR3 rot;							// 向き

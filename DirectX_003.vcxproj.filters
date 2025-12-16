@@ -43,17 +43,44 @@
     <Filter Include="main\h">
       <UniqueIdentifier>{85619e82-fe0c-49e2-9f85-51d815d0021d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="main\effect">
+      <UniqueIdentifier>{8ce4a84d-41fe-42b0-b147-d742b67b1b0b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="main\effect\cpp">
+      <UniqueIdentifier>{62cabd73-6255-4711-9537-b42992399e3e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="main\effect\h">
+      <UniqueIdentifier>{9ec0e6ff-0fc6-44bc-ae41-b85328434f9c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="title">
+      <UniqueIdentifier>{a8d795a5-8358-4da2-aac3-64b4d52e3d60}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="title\cpp">
+      <UniqueIdentifier>{33dc474f-57af-4555-ad44-549867476066}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="title\h">
+      <UniqueIdentifier>{0abd7c5e-3139-4971-90f2-b8ec54768f98}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="result">
+      <UniqueIdentifier>{6d40443b-f5a2-4f0d-86af-21112f7b254a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="result\cpp">
+      <UniqueIdentifier>{a29b6b64-f43f-489c-acb5-e598a22e010f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="result\h">
+      <UniqueIdentifier>{2a5b5a56-13ca-48f4-a54b-1a043833e65f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ranking">
+      <UniqueIdentifier>{b1427cf0-fb76-4f53-9850-0c4cee1fac4d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ranking\cpp">
+      <UniqueIdentifier>{13528af9-d2a4-4a05-aeb7-9606f441f5e4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ranking\h">
+      <UniqueIdentifier>{24241982-b0e4-4ccd-8dd0-b55c3cc99d27}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="field.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="wall.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="snow.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="model.cpp">
       <Filter>ソース ファイル\object</Filter>
     </ClCompile>
@@ -68,9 +95,6 @@
     </ClCompile>
     <ClCompile Include="player.cpp">
       <Filter>ソース ファイル\object</Filter>
-    </ClCompile>
-    <ClCompile Include="shadow.cpp">
-      <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="billboard.cpp">
       <Filter>ソース ファイル\object</Filter>
@@ -93,9 +117,6 @@
     <ClCompile Include="meshsphere.cpp">
       <Filter>ソース ファイル\mesh</Filter>
     </ClCompile>
-    <ClCompile Include="offsetmodel.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="debugproc.cpp">
       <Filter>main\cpp</Filter>
     </ClCompile>
@@ -111,44 +132,65 @@
     <ClCompile Include="object.cpp">
       <Filter>ソース ファイル\object</Filter>
     </ClCompile>
-    <ClCompile Include="loadscript.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="fade.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>main\cpp</Filter>
     </ClCompile>
     <ClCompile Include="game.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="pause.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="title.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="sound.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>game\cpp</Filter>
     </ClCompile>
     <ClCompile Include="effect.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>main\effect\cpp</Filter>
     </ClCompile>
     <ClCompile Include="particle.cpp">
+      <Filter>main\effect\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="loadscript.cpp">
+      <Filter>main\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="offsetmodel.cpp">
+      <Filter>ソース ファイル\object</Filter>
+    </ClCompile>
+    <ClCompile Include="pause.cpp">
+      <Filter>game\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="wall.cpp">
+      <Filter>ソース ファイル\object</Filter>
+    </ClCompile>
+    <ClCompile Include="field.cpp">
+      <Filter>ソース ファイル\object</Filter>
+    </ClCompile>
+    <ClCompile Include="shadow.cpp">
+      <Filter>ソース ファイル\object</Filter>
+    </ClCompile>
+    <ClCompile Include="snow.cpp">
+      <Filter>ソース ファイル\object</Filter>
+    </ClCompile>
+    <ClCompile Include="sound.cpp">
+      <Filter>main\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="title.cpp">
+      <Filter>title\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="result.cpp">
+      <Filter>result\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="resultmenu.cpp">
+      <Filter>result\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="ranking.cpp">
+      <Filter>ranking\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="rankingrank.cpp">
+      <Filter>ranking\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="item.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="friends.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="field.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="shadow.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="wall.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="snow.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="bullet.h">
       <Filter>ヘッダー ファイル\object</Filter>
     </ClInclude>
@@ -185,9 +227,6 @@
     <ClInclude Include="meshwall.h">
       <Filter>ヘッダー ファイル\mesh</Filter>
     </ClInclude>
-    <ClInclude Include="offsetmodel.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="debugproc.h">
       <Filter>main\h</Filter>
     </ClInclude>
@@ -203,28 +242,61 @@
     <ClInclude Include="object.h">
       <Filter>ヘッダー ファイル\object</Filter>
     </ClInclude>
-    <ClInclude Include="loadscript.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="fade.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="effect.h">
+      <Filter>main\effect\h</Filter>
     </ClInclude>
     <ClInclude Include="game.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>game\h</Filter>
     </ClInclude>
-    <ClInclude Include="pause.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="fade.h">
+      <Filter>main\h</Filter>
     </ClInclude>
-    <ClInclude Include="title.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="loadscript.h">
+      <Filter>main\h</Filter>
     </ClInclude>
-    <ClInclude Include="sound.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="effect.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="offsetmodel.h">
+      <Filter>ヘッダー ファイル\object</Filter>
     </ClInclude>
     <ClInclude Include="particle.h">
+      <Filter>main\effect\h</Filter>
+    </ClInclude>
+    <ClInclude Include="pause.h">
+      <Filter>game\h</Filter>
+    </ClInclude>
+    <ClInclude Include="field.h">
+      <Filter>ヘッダー ファイル\object</Filter>
+    </ClInclude>
+    <ClInclude Include="wall.h">
+      <Filter>ヘッダー ファイル\object</Filter>
+    </ClInclude>
+    <ClInclude Include="shadow.h">
+      <Filter>ヘッダー ファイル\object</Filter>
+    </ClInclude>
+    <ClInclude Include="snow.h">
+      <Filter>ヘッダー ファイル\object</Filter>
+    </ClInclude>
+    <ClInclude Include="sound.h">
+      <Filter>main\h</Filter>
+    </ClInclude>
+    <ClInclude Include="title.h">
+      <Filter>title\h</Filter>
+    </ClInclude>
+    <ClInclude Include="result.h">
+      <Filter>result\h</Filter>
+    </ClInclude>
+    <ClInclude Include="resultmenu.h">
+      <Filter>result\h</Filter>
+    </ClInclude>
+    <ClInclude Include="ranking.h">
+      <Filter>ranking\h</Filter>
+    </ClInclude>
+    <ClInclude Include="rankingrank.h">
+      <Filter>ranking\h</Filter>
+    </ClInclude>
+    <ClInclude Include="item.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="friends.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

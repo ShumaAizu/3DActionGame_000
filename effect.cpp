@@ -50,7 +50,7 @@ void InitEffect(void)
 
 	// テクスチャの読み込み
 	D3DXCreateTextureFromFile(pDevice,
-		"data\\TEXTURE\\effect001.jpg",
+		"data\\TEXTURE\\effect000.jpg",
 		&g_pTextureEffect);
 
 	// 初期化
@@ -146,19 +146,19 @@ void DrawEffect(void)
 	D3DXMATRIX mtxRot, mtxTrans;				// 計算用マトリックス
 	D3DXMATRIX mtxView;							// ビューマトリックス
 
+	// Zテストを無効にする
+	pDevice->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
+	pDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
+
+	// アルファテストを有効にする
+	pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);		// アルファテストを有効にする
+	pDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATER);	// 比較方法(基準値より大きければ描画)
+	pDevice->SetRenderState(D3DRS_ALPHAREF, 0);				// アルファテストの参照値を設定(～以上で描画, intで設定)
+
 	// αブレンディングを加算合成に設定
 	pDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
 	pDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
 	pDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
-
-	//// アルファテストを有効にする
-	//pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);		// アルファテストを有効にする
-	//pDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATER);	// 比較方法(基準値より大きければ描画)
-	//pDevice->SetRenderState(D3DRS_ALPHAREF, 0);				// アルファテストの参照値を設定(～以上で描画, intで設定)
-
-	//// Zテストを無効にする
-	//pDevice->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
-	//pDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
 
 	for (int nCntEffect = 0; nCntEffect < MAX_EFFECT; nCntEffect++, pEffect++)
 	{
@@ -199,14 +199,14 @@ void DrawEffect(void)
 		pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, nCntEffect * 4, 2);
 	}
 
-	//// Zテストを無効にする
-	//pDevice->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
-	//pDevice->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
+	// Zテストを無効にする
+	pDevice->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
+	pDevice->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
 
-	//// アルファテストを無効にする
-	//pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);	// アルファテストを無効化
-	//pDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_ALWAYS);	// 比較方法(すべて描画)
-	//pDevice->SetRenderState(D3DRS_ALPHAREF, 255);				// 基準値を設定(すべてを描画している)
+	// アルファテストを無効にする
+	pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);	// アルファテストを無効化
+	pDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_ALWAYS);	// 比較方法(すべて描画)
+	pDevice->SetRenderState(D3DRS_ALPHAREF, 0);				// 基準値を設定(すべてを描画している)
 
 	// αブレンディングを元に戻す
 	pDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
@@ -224,7 +224,7 @@ void UpdateEffect(void)
 	Effect* pEffect = &g_aEffect[0];
 
 	// 頂点座標の更新
-	VERTEX_2D* pVtx;			// 頂点情報へのポインタ
+	VERTEX_3D* pVtx;			// 頂点情報へのポインタ
 
 	// 頂点バッファをロックし,頂点情報へのポインタを取得
 	g_pVtxBuffEffect->Lock(0, 0, (void**)&pVtx, 0);
@@ -262,7 +262,10 @@ void UpdateEffect(void)
 			if (pEffect->nLife < 0)
 			{//もし寿命が尽きたら
 				pEffect->bUse = false;		// エフェクトを使用していない状態にする
+				pEffect->pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+				pEffect->col = D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f);
 				pEffect->move = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+				pEffect->fRadius = 0;
 			}
 			
 		}
@@ -281,7 +284,7 @@ void SetEffect(D3DXVECTOR3 pos, D3DXVECTOR3 move, D3DXCOLOR col, float fRadius, 
 {
 	Effect* pEffect = &g_aEffect[0];
 
-	VERTEX_2D* pVtx;			// 頂点情報へのポインタ
+	VERTEX_3D* pVtx;			// 頂点情報へのポインタ
 
 	// 頂点バッファをロックし,頂点情報へのポインタを取得
 	g_pVtxBuffEffect->Lock(0, 0, (void**)&pVtx, 0);

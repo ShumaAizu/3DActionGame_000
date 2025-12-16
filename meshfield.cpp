@@ -21,6 +21,7 @@
 #define MESHFIELD_SPLIT_WIDHT		(30 + 1)		// 横の分割数
 #define MESHFIELD_SPLIT_DEPTH		(30 + 1)		// 縦の分割数
 #define MAX_MESHFIELD				(5)				// メッシュフィールドの最大数
+#define MAX_VTX						(1000)
 
 //*****************************************************************************
 // グローバル変数
@@ -62,8 +63,8 @@ void InitMeshField(void)
 	}
 
 	SetMeshField(D3DXVECTOR3(-1500.0f, 0.0f, 1500.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), 300.0f, 300.0f, 10, 10, MESHFIELDTYPE_ICE);
-	SetMeshField(D3DXVECTOR3(-5000.0f, -50.0f, 5000.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), MESHFIELD_WIDTH, MESHFIELD_DEPTH, 100, 100, MESHFIELDTYPE_SEA);
-
+	SetMeshField(D3DXVECTOR3(-5000.0f, -50.0f, 5000.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), 500.0f, 500.0f, 20, 20, MESHFIELDTYPE_SEA);
+	LoadMesh("data/SCRIPTS/test.bin");
 }
 
 //=============================================================================
@@ -233,10 +234,6 @@ void SetMeshField(D3DXVECTOR3 pos, D3DXVECTOR3 rot, float fWidth, float fDepth, 
 			for (int nCntVtxWidht = 0; nCntVtxWidht < nSplitWidth; nCntVtxWidht++)
 			{
 				pVtx[nCntVtxWidht].pos = D3DXVECTOR3(fWidth * nCntVtxWidht, 0.0f, -fDepth * nCntVtxDepth);
-				if ((nCntVtxDepth == 28 && nCntVtxWidht == 14) || (nCntVtxDepth == 28 && nCntVtxWidht == 15))
-				{
-					pVtx[nCntVtxWidht].pos = D3DXVECTOR3(fWidth * nCntVtxWidht, 50.0f, -fDepth * nCntVtxDepth);
-				}
 				pVtx[nCntVtxWidht].nor = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
 				pVtx[nCntVtxWidht].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
 				pVtx[nCntVtxWidht].tex = D3DXVECTOR2(1.0f * nCntVtxWidht, 1.0f * nCntVtxDepth);
@@ -324,10 +321,6 @@ PMESHFIELD CollisionMeshField(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTO
 		D3DXMatrixTranslation(&mtxTrans, pMeshField->pos.x, pMeshField->pos.y, pMeshField->pos.z);
 		D3DXMatrixMultiply(&pMeshField->mtxWorld, &pMeshField->mtxWorld, &mtxTrans);
 
-		VecMove = *pPos - *pPosOld;
-
-		PrintDebugProc("vecMove = { %.2f %.2f %.2f }\n", VecMove.x, VecMove.y, VecMove.z);
-
 		for (int nCntVtxDepth = 0; nCntVtxDepth < pMeshField->nSplitDepth - 1; nCntVtxDepth++)
 		{
 			for (int nCntVtxWidht = 0; nCntVtxWidht < pMeshField->nSplitWidth - 1; nCntVtxWidht++)
@@ -358,13 +351,6 @@ PMESHFIELD CollisionMeshField(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTO
 					(vecLineB.z * vecToPosB.x) - (vecLineB.x * vecToPosB.z) < 0 &&
 					(vecLineC.z * vecToPosC.x) - (vecLineC.x * vecToPosC.z) < 0)
 				{// もし全ての境界線ベクトルの内側にいたら
-					//pVtx[nCntVtxWidht].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
-					//pVtx[nCntVtxWidht + pMeshField->nSplitWidth].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
-					//pVtx[nCntVtxWidht + pMeshField->nSplitWidth + 1].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
-
-					//SetEffect(PosA, INIT_D3DXVEC3, D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f), 15.0f, 0.0f, 0.0f, 1);
-					//SetEffect(PosB, INIT_D3DXVEC3, D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f), 15.0f, 0.0f, 0.0f, 1);
-					//SetEffect(PosC, INIT_D3DXVEC3, D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f), 15.0f, 0.0f, 0.0f, 1);
 
 					// 面の法線
 					D3DXVECTOR3 vecNor = { (-vecLineA.y * vecLineB.z) - (-vecLineA.z * vecLineB.y), (-vecLineA.z * vecLineB.x) - (-vecLineA.x * vecLineB.z), (-vecLineA.x * vecLineB.y) - (-vecLineA.y * vecLineB.x) };
@@ -405,9 +391,6 @@ PMESHFIELD CollisionMeshField(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTO
 					(vecLineB.z * vecToPosB.x) - (vecLineB.x * vecToPosB.z) > 0 &&
 					(vecLineC.z * vecToPosC.x) - (vecLineC.x * vecToPosC.z) > 0)
 				{// もし全ての境界線ベクトルの内側にいたら
-					//pVtx[nCntVtxWidht].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
-					//pVtx[nCntVtxWidht + 1].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
-					//pVtx[nCntVtxWidht + pMeshField->nSplitWidth + 1].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
 
 					D3DXVECTOR3 vecNor = { (vecLineB.y * -vecLineA.z) - (vecLineB.z * -vecLineA.y), (vecLineB.z * -vecLineA.x) - (vecLineB.x * -vecLineA.z), (vecLineB.x * -vecLineA.y) - (vecLineB.y * -vecLineA.x) };
 					
@@ -434,4 +417,126 @@ PMESHFIELD CollisionMeshField(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTO
 	}
 
 	return NULL;
+}
+
+//=============================================================================
+//	メッシュの設定処理
+//=============================================================================
+void SetMesh(D3DXVECTOR3 pos, D3DXVECTOR3 rot, int nVtx, D3DXVECTOR3* VtxPos, int nSplitWidth, int nSplitDepth, MESHFIELDTYPE type)
+{
+	PMESHFIELD pMeshField = &g_ameshfield[0];
+
+	// デバイスの取得
+	LPDIRECT3DDEVICE9 pDevice = GetDevice();
+
+	for (int nCntField = 0; nCntField < MAX_MESHFIELD; nCntField++, pMeshField++)
+	{
+		if (pMeshField->bUse == true)
+		{
+			continue;
+		}
+
+		// メッシュフィールドの設定
+		pMeshField->pos = pos;
+		pMeshField->rot = rot;
+		pMeshField->type = type;
+		pMeshField->nSplitWidth = nSplitWidth;
+		pMeshField->nSplitDepth = nSplitDepth;
+
+		// 頂点バッファの生成
+		pDevice->CreateVertexBuffer(sizeof(VERTEX_3D) * nVtx,
+			D3DUSAGE_WRITEONLY,
+			FVF_VERTEX_3D,
+			D3DPOOL_MANAGED,
+			&pMeshField->pVtxBuff,
+			NULL);
+
+		// 初期化
+		VERTEX_3D* pVtx;			// 頂点情報へのポインタ
+
+		// 頂点バッファをロックし,頂点情報へのポインタを取得
+		pMeshField->pVtxBuff->Lock(0, 0, (void**)&pVtx, 0);
+
+		for (int nCntVtx = 0; nCntVtx < nVtx; nCntVtx++)
+		{
+			pVtx[nCntVtx].pos = *VtxPos;
+			pVtx[nCntVtx].nor = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
+			pVtx[nCntVtx].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+			pVtx[nCntVtx].tex = D3DXVECTOR2(1.0f * nCntVtx, 1.0f * nCntVtx);
+
+			VtxPos++;
+		}
+
+		// 頂点バッファをアンロックする
+		pMeshField->pVtxBuff->Unlock();
+
+		// インデックスバッファの設定
+		pDevice->CreateIndexBuffer(sizeof(WORD) * (nSplitWidth * 2 * (nSplitDepth - 1) + ((nSplitDepth - 2) * 2)),
+			D3DUSAGE_WRITEONLY,
+			D3DFMT_INDEX16,
+			D3DPOOL_MANAGED,
+			&pMeshField->pIdxBuff,
+			NULL);
+
+		WORD* pIdx;		// インデックス情報へのポインタ
+
+		// インデックスバッファをロックし、頂点情報へのポインタを取得
+		pMeshField->pIdxBuff->Lock(0, 0, (void**)&pIdx, 0);
+
+		for (int nCntVtxDepth = 0; nCntVtxDepth < nSplitDepth - 1; nCntVtxDepth++)
+		{
+			for (int nCntVtxWidht = 0; nCntVtxWidht < nSplitWidth; nCntVtxWidht++)
+			{
+				if (nCntVtxDepth != 0 && nCntVtxWidht == 0)
+				{// 奥行きが最初の行以外かつ幅が最初の行なら
+					pIdx[0] = (nSplitWidth * (nCntVtxDepth + 1)) + nCntVtxWidht;
+					pIdx++;
+				}
+
+				pIdx[0] = (nSplitWidth * (nCntVtxDepth + 1)) + nCntVtxWidht;
+				pIdx[1] = nSplitWidth * nCntVtxDepth + nCntVtxWidht;
+
+				pIdx += 2;
+
+				if (nCntVtxWidht == nSplitWidth - 1 && nCntVtxDepth != nSplitDepth - 2)
+				{// 幅が最後の行だったら
+					pIdx[0] = nSplitWidth * nCntVtxDepth + nCntVtxWidht;
+					pIdx++;
+				}
+			}
+		}
+
+		// インデックスバッファをアンロックする
+		pMeshField->pIdxBuff->Unlock();
+
+		pMeshField->bUse = true;
+		break;
+	}
+}
+
+//=============================================================================
+//	メッシュの読み込み処理
+//=============================================================================
+void LoadMesh(const char* pFileName)
+{
+	FILE* pFile = fopen(pFileName, "rb");
+
+	if (pFile == NULL)
+	{
+		return;
+	}
+
+	int nVtx = 0;
+	int nSplitWidth = 0;
+	int nSplitDepth = 0;
+	D3DXVECTOR3 VtxPos[MAX_VTX] = {};
+
+	fread(&nVtx, sizeof(int), 1, pFile);
+	fread(&nSplitWidth, sizeof(int), 1, pFile);
+	fread(&nSplitDepth, sizeof(int), 1, pFile);
+	fread(&VtxPos[0], sizeof(D3DXVECTOR3), nVtx, pFile);
+
+	fclose(pFile);
+
+	SetMesh(INIT_D3DXVEC3, INIT_D3DXVEC3, nVtx, &VtxPos[0], nSplitWidth, nSplitDepth, MESHFIELDTYPE_ICE);
 }

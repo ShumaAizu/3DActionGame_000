@@ -157,8 +157,10 @@
     <ClCompile Include="effect.cpp" />
     <ClCompile Include="fade.cpp" />
     <ClCompile Include="field.cpp" />
+    <ClCompile Include="friends.cpp" />
     <ClCompile Include="game.cpp" />
     <ClCompile Include="input.cpp" />
+    <ClCompile Include="item.cpp" />
     <ClCompile Include="light.cpp" />
     <ClCompile Include="loadscript.cpp" />
     <ClCompile Include="main.cpp" />
@@ -178,6 +180,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="player.cpp" />
+    <ClCompile Include="ranking.cpp" />
+    <ClCompile Include="rankingrank.cpp" />
+    <ClCompile Include="result.cpp" />
+    <ClCompile Include="resultmenu.cpp" />
     <ClCompile Include="shadow.cpp" />
     <ClCompile Include="snow.cpp" />
     <ClCompile Include="sound.cpp" />
@@ -192,8 +198,10 @@
     <ClInclude Include="effect.h" />
     <ClInclude Include="fade.h" />
     <ClInclude Include="field.h" />
+    <ClInclude Include="friends.h" />
     <ClInclude Include="game.h" />
     <ClInclude Include="input.h" />
+    <ClInclude Include="item.h" />
     <ClInclude Include="light.h" />
     <ClInclude Include="loadscript.h" />
     <ClInclude Include="main.h" />
@@ -210,6 +218,10 @@
     <ClInclude Include="pause.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="player.h" />
+    <ClInclude Include="ranking.h" />
+    <ClInclude Include="rankingrank.h" />
+    <ClInclude Include="result.h" />
+    <ClInclude Include="resultmenu.h" />
     <ClInclude Include="shadow.h" />
     <ClInclude Include="snow.h" />
     <ClInclude Include="sound.h" />

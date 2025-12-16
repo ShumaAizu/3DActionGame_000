@@ -36,10 +36,9 @@ void InitPause(void)
 {
 	const char* pPauseMenuFileName[] =
 	{
-		"data\\TEXTURE\\pauseui000.png",
-		"data\\TEXTURE\\pauseui001.png",
-		"data\\TEXTURE\\pauseui002.png",
-		"data\\TEXTURE\\pauseui003.png"
+		"data\\TEXTURE\\continue000.png",
+		"data\\TEXTURE\\restart000.png",
+		"data\\TEXTURE\\quit000.png"
 	};
 
 	// デバイスの取得
@@ -176,6 +175,9 @@ void UpdatePause(void)
 	// 頂点座標の更新
 	VERTEX_2D* pVtx;			// 頂点情報へのポインタ
 
+	// 頂点バッファをロックし,頂点情報へのポインタを取得
+	g_pVtxBuffPause->Lock(0, 0, (void**)&pVtx, 0);
+
 	if (GetJoypadRepeat(JOYKEY_UP) == true || GetKeyboardRepeat(DIK_W) == true || GetJoypadStickRepeat(JOYSTICK_UP) == true)
 	{ // 上方向キーが押されたら
 		// 現在のモードに合わせて変更
@@ -189,12 +191,8 @@ void UpdatePause(void)
 			g_pauseMenu = PAUSE_MENU_CONTINUE;
 			break;
 
-		case PAUSE_MENU_STAGESELECT:
-			g_pauseMenu = PAUSE_MENU_RESTART;
-			break;
-
 		case PAUSE_MENU_QUIT:
-			g_pauseMenu = PAUSE_MENU_STAGESELECT;
+			g_pauseMenu = PAUSE_MENU_RESTART;
 			break;
 		}
 	}
@@ -209,10 +207,6 @@ void UpdatePause(void)
 			break;
 
 		case PAUSE_MENU_RESTART:
-			g_pauseMenu = PAUSE_MENU_STAGESELECT;
-			break;
-
-		case PAUSE_MENU_STAGESELECT:
 			g_pauseMenu = PAUSE_MENU_QUIT;
 			break;
 
@@ -220,6 +214,28 @@ void UpdatePause(void)
 			g_pauseMenu = PAUSE_MENU_CONTINUE;
 			break;
 		}
+	}
+
+	for (int nCntPause = 0; nCntPause < PAUSE_MENU_MAX; nCntPause++)
+	{
+		if (nCntPause == g_pauseMenu)
+		{ // 選択されていれば不透明度を戻す
+			// 頂点カラーの設定
+			pVtx[0].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+			pVtx[1].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+			pVtx[2].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+			pVtx[3].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+		}
+		else
+		{ // 選択されていなければ不透明度を下げる
+			// 頂点カラーの設定
+			pVtx[0].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 0.5f);
+			pVtx[1].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 0.5f);
+			pVtx[2].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 0.5f);
+			pVtx[3].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 0.5f);
+		}
+
+		pVtx += 4;
 	}
 
 	if (GetJoypadTrigger(JOYKEY_A) == true || GetKeyboardTrigger(DIK_RETURN) == true)

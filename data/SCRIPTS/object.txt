@@ -1,0 +1,123 @@
+#==============================================================================
+#
+# 3Dアクションゲームオブジェクトファイル [object.txt]
+# Author : SHUMA AIZU
+#
+#==============================================================================
+
+SCRIPT
+
+#------------------------------------------------------------------------------
+#	仲間の情報
+#------------------------------------------------------------------------------
+
+MOTIONSCRIPT = data/SCRIPTS/penguin_motion.txt 1
+MOTIONSCRIPT = data/SCRIPTS/snowman_motion.txt 1
+
+FRIENDSET
+	POS = 0.0 0.0 0.0
+	ROT = 0.0 0.0 0.0
+	TYPE = 0
+	EVENT = 0
+END_FRIENDSET
+
+FRIENDSET
+	POS = 30.0 0.0 0.0
+	ROT = 0.0 0.0 0.0
+	TYPE = 0
+	EVENT = 0
+END_FRIENDSET
+
+FRIENDSET
+	POS = -30.0 0.0 0.0
+	ROT = 0.0 0.0 0.0
+	TYPE = 0
+	EVENT = 0
+END_FRIENDSET
+
+FRIENDSET
+	POS = 50.0 0.0 0.0
+	ROT = 0.0 0.0 0.0
+	TYPE = 0
+	EVENT = 0
+END_FRIENDSET
+
+FRIENDSET
+	POS = -50.0 0.0 0.0
+	ROT = 0.0 0.0 0.0
+	TYPE = 0
+	EVENT = 0
+END_FRIENDSET
+
+FRIENDSET
+	POS = -50.1 0.0 0.0
+	ROT = 0.0 0.0 0.0
+	TYPE = 1
+	EVENT = 0
+END_FRIENDSET
+
+FRIENDSET
+	POS = -50.1 0.0 0.0
+	ROT = 0.0 0.0 0.0
+	TYPE = 1
+	EVENT = 0
+END_FRIENDSET
+
+FRIENDSET
+	POS = -50.1 0.0 0.0
+	ROT = 0.0 0.0 0.0
+	TYPE = 1
+	EVENT = 0
+END_FRIENDSET
+
+FRIENDSET
+	POS = -50.1 0.0 0.0
+	ROT = 0.0 0.0 0.0
+	TYPE = 1
+	EVENT = 0
+END_FRIENDSET
+
+FRIENDSET
+	POS = -50.1 0.0 0.0
+	ROT = 0.0 0.0 0.0
+	TYPE = 1
+	EVENT = 0
+END_FRIENDSET
+
+FRIENDSET
+	POS = -50.1 0.0 0.0
+	ROT = 0.0 0.0 0.0
+	TYPE = 1
+	EVENT = 0
+END_FRIENDSET
+
+FRIENDSET
+	POS = -50.1 0.0 0.0
+	ROT = 0.0 0.0 0.0
+	TYPE = 1
+	EVENT = 0
+END_FRIENDSET
+
+FRIENDSET
+	POS = -50.1 0.0 0.0
+	ROT = 0.0 0.0 0.0
+	TYPE = 1
+	EVENT = 0
+END_FRIENDSET
+
+FRIENDSET
+	POS = -50.1 0.0 0.0
+	ROT = 0.0 0.0 0.0
+	TYPE = 1
+	EVENT = 0
+END_FRIENDSET
+
+#------------------------------------------------------------------------------
+#	アイテムの情報
+#------------------------------------------------------------------------------
+
+ITEMSET
+
+END_ITEMSET
+
+END_SCRIPT

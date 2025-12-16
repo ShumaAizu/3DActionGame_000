@@ -16,6 +16,9 @@
 #include "model.h"
 #include "meshwall.h"
 #include "meshfield.h"
+#include "friends.h"
+
+#include "snow.h"
 
 #include "debugproc.h"
 
@@ -30,6 +33,7 @@
 // グローバル変数
 //*****************************************************************************
 Player g_player;						// プレイヤーの情報
+D3DXVECTOR3 g_posLog[MAX_POSLOG] = {};	// 過去の位置の記録
 
 //=============================================================================
 //	プレイヤーの初期化処理
@@ -42,13 +46,12 @@ void InitPlayer(void)
 	memset(&g_player, NULL, sizeof(Player));
 
 	// 初期化
-	g_player.pos = D3DXVECTOR3(0.0f, 0.0f, -1500.0f);
+	g_player.pos = D3DXVECTOR3(0.0f, 1.0f, -1500.0f);
 	g_player.posOld = D3DXVECTOR3(0.0f, 0.0f, -1500.0f);
-	//g_player.rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-	//g_player.move = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	g_player.fRadius = PLAYER_RADIUS;
 	g_player.fSpeed = PLAYER_SPEED;
-	//g_player.pRideField = NULL;
 	g_player.nIdxShadow = -1;
+	g_player.nIdxPosLog = 0;
 
 	// 影の設定
 	g_player.nIdxShadow = SetShadow();
@@ -65,7 +68,7 @@ void UninitPlayer(void)
 		if (g_player.aOffSetModel[nCntOffSetModel].pMesh != NULL)
 		{
 			g_player.aOffSetModel[nCntOffSetModel].pMesh->Release();
-			g_player.aOffSetModel[nCntOffSetModel].pMesh = 0;
+			g_player.aOffSetModel[nCntOffSetModel].pMesh = NULL;
 		}
 
 		// マテリアルの破棄
@@ -164,7 +167,24 @@ void DrawPlayer(void)
 //=============================================================================
 void UpdatePlayer(void)
 {
-	g_player.posOld = g_player.pos;
+	static int nFrameCounter = 0;
+
+	g_player.posOld = g_player.pos;		// 過去の位置更新
+
+	if (g_player.state == PLAYERSTATE_MOVE || g_player.state == PLAYERSTATE_JUMP)
+	{
+		if (g_player.nNumFriends > 0)
+		{
+			nFrameCounter++;
+		}
+
+		if (nFrameCounter == POSLOGCOUNT)
+		{
+			g_posLog[g_player.nIdxPosLog] = g_player.pos;
+
+			nFrameCounter = 0;
+		}
+	}
 
 	PrintDebugProc("Player.pos = { %.2f, %.2f, %.2f }\n", g_player.pos.x, g_player.pos.y, g_player.pos.z);
 	PrintDebugProc("Player.posOld = { %.2f, %.2f, %.2f }\n", g_player.posOld.x, g_player.posOld.y, g_player.posOld.z);
@@ -221,8 +241,12 @@ void UpdatePlayer(void)
 		}
 	}
 
-	// 補正
+	if (g_player.state == PLAYERSTATE_MOVE)
+	{
+		SetSnow(g_player.pos + D3DXVECTOR3((float)(rand() % 5 - 3), 0.0f, (float)(rand() % 5 - 3)), INIT_D3DXVEC3, 3.0f, SNOWTYPE_000);
+	}
 
+	// 補正
 	fRotMove = AngleNormalize(fRotMove);
 
 	fRotDest = AngleNormalize(fRotDest);
@@ -240,17 +264,14 @@ void UpdatePlayer(void)
 	g_player.rot.y = AngleNormalize(g_player.rot.y);
 
 	if (GetKeyboardRepeat(DIK_SPACE) == true && g_player.bJump == false)
-	{
+	{// スペースキーが押されたかつジャンプ状態じゃない
 		SetMotion(MOTIONTYPE_JUMP, true, false, 10);
 		g_player.state = PLAYERSTATE_JUMP;
 		g_player.move.y = PLAYER_JUMP;
 		g_player.bJump = true;
 	}
 
-	PrintDebugProc("現在のモーション : %d\n", g_player.motiontype);
-	PrintDebugProc("ブレンドのモーション : %d\n", g_player.motiontypeBlend);
-
-	g_player.move.y += GRAVITY;
+	g_player.move.y += GRAVITY;			// 重力をかける
 	g_player.pos += g_player.move;		// 位置を更新
 
 	g_player.move.x += (0.0f - g_player.move.x) * g_player.fInertia;
@@ -268,6 +289,7 @@ void UpdatePlayer(void)
 	// 壁との当たり判定
 	CollisionMeshWall(&g_player.pos, &g_player.posOld, &g_player.move);
 
+	// フィールドとの当たり判定
 	g_player.pRideField = CollisionMeshField(&g_player.pos, &g_player.posOld, &g_player.move);
 
 	if (g_player.pRideField != NULL)
@@ -296,40 +318,16 @@ void UpdatePlayer(void)
 	}
 
 	// モデルとの当たり判定
-	CollisionModel(&g_player.pos, &g_player.posOld, &g_player.move, D3DXVECTOR3(10.0f, 10.0f, 10.0f), D3DXVECTOR3(10.0f, 10.0f, 10.0f));
+	//CollisionModel(&g_player.pos, &g_player.posOld, &g_player.move, D3DXVECTOR3(10.0f, 10.0f, 10.0f), D3DXVECTOR3(10.0f, 10.0f, 10.0f));
 
-	//CollisionMeshModelTest(&g_player.pos, &g_player.posOld);
+	// 仲間との当たり判定
+	CollisionFriends(&g_player.pos, g_player.fRadius);
 
 	// 影の位置を更新
 	SetPositionShadow(g_player.nIdxShadow, D3DXVECTOR3(g_player.pos.x, g_player.pos.y - g_player.pos.y, g_player.pos.z));
 
 	// 全モデル更新
 	UpdateMotion();
-
-	if (GetKeyboardTrigger(DIK_5) == true)
-	{
-		SetMotion(MOTIONTYPE_NEUTRAL, true, true, 10);
-	}
-
-	if (GetKeyboardTrigger(DIK_6) == true)
-	{
-		SetMotion(MOTIONTYPE_ACTION, false, true, 10);
-	}
-
-	if (GetKeyboardTrigger(DIK_7) == true)
-	{
-		SetMotion(MOTIONTYPE_JUMP, false, true, 10);
-	}
-
-	if (GetKeyboardTrigger(DIK_8) == true)
-	{
-		SetMotion(MOTIONTYPE_LANDING, false, true, 10);
-	}
-
-	if (GetKeyboardTrigger(DIK_9) == true)
-	{
-		SetMotion(MOTIONTYPE_ACTIONMOVE, true, true, 10);
-	}
 }
 
 //=============================================================================
@@ -391,7 +389,7 @@ void SetMotion(MOTIONTYPE motiontype, bool bLoopMotion, bool bBlendMotion, int n
 void UpdateMotion(void)
 {
 	float fPosX, fPosY, fPosZ, fRotX, fRotY, fRotZ;
-	float fDiffKey, fRateKey;
+	float fDiffKey;
 
 	// 全モデル(パーツ)の更新
 	for (int nCntModel = 0; nCntModel < g_player.nNumOffSetModel; nCntModel++)
@@ -659,4 +657,30 @@ void LoadMotion(bool bLoop, int nNumKey, KEY_INFO* pKeyInfo, int nMotion)
 	}
 
 	g_player.nNumMotion++;
+}
+
+//=============================================================================
+//	プレイヤーの状態管理処理
+//=============================================================================
+void PlayerStateController(Player* pPlayer, PLAYERSTATE state)
+{
+
+}
+
+//=============================================================================
+//	仲間増加処理
+//=============================================================================
+int FriendsAdd(D3DXVECTOR3 **posDest)
+{
+	*posDest = &g_posLog[g_player.nNumFriends];
+	g_player.nNumFriends++;
+	return g_player.nNumFriends;
+}
+
+//=============================================================================
+//	ログ更新処理
+//=============================================================================
+void UpdatePosLog(int nIdxPosLog, D3DXVECTOR3 pos)
+{
+	g_posLog[nIdxPosLog] = pos;
 }

@@ -265,7 +265,7 @@ void CollisionMeshWall(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTOR3* pMo
 
 	for (int nCntMeshWall = 0; nCntMeshWall < MAX_MESHWALL; nCntMeshWall++, pMeshWall++)
 	{
-		if (g_ameshwall[nCntMeshWall].bUse == false)
+		if (pMeshWall->bUse == false)
 		{// 使用していなければ戻る
 			continue;
 		}
@@ -285,7 +285,7 @@ void CollisionMeshWall(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTOR3* pMo
 		VERTEX_3D* pVtx;			// 頂点情報へのポインタ
 
 		// 頂点バッファをロックし,頂点情報へのポインタを取得
-		g_ameshwall[nCntMeshWall].pVtxBuff->Lock(0, 0, (void**)&pVtx, 0);
+		pMeshWall->pVtxBuff->Lock(0, 0, (void**)&pVtx, 0);
 
 		// 位置と向きを反映した頂点座標を入れる
 		D3DXVec3TransformCoord(&pos0, &pVtx[0].pos, &pMeshWall->mtxWorld);

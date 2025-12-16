@@ -14,17 +14,18 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define MAX_MODEL		(128)		// モデルの最大数
+#define MAX_MODEL		(128)			// モデルの最大数
 
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
-Modeldata g_amodeldata[MODELTYPE_MAX];							// モデルデータの情報
-Model g_amodel[MAX_MODEL];										// モデルの情報
-int g_nSelectModel;
-int g_nNumModel;
-int g_nSelectType;
-float g_fModelMove;
+Modeldata g_amodeldata[MODELTYPE_MAX];	// モデルデータの情報
+Model g_amodel[MAX_MODEL];				// モデルの情報
+int g_nSelectModel;						// 選択中のモデル
+int g_nNumModelData;					// モデルデータ数
+int g_nNumModel;						// 現在のモデル数
+int g_nSelectType;						// 選択中の種類
+float g_fModelMove;						// モデルの移動量
 
 const char* g_pModelFileName[MODELTYPE_MAX] =
 {
@@ -41,105 +42,6 @@ void InitModel(void)
 	// デバイスの取得
 	LPDIRECT3DDEVICE9 pDevice = GetDevice();
 
-	BYTE* pVtxBuff;								// 頂点バッファへのポインタ
-	BYTE* pIdxBuff;								// インデックスバッファへのポインタ
-
-	for (int nCntModeldata = 0; nCntModeldata < MODELTYPE_MAX; nCntModeldata++)
-	{
-		// Xファイルの読み込み
-		D3DXLoadMeshFromX(g_pModelFileName[nCntModeldata],
-			D3DXMESH_SYSTEMMEM,
-			pDevice,
-			NULL,
-			&g_amodeldata[nCntModeldata].pBuffMat,
-			NULL,
-			&g_amodeldata[nCntModeldata].dwNumMat,
-			&g_amodeldata[nCntModeldata].pMesh);
-
-		D3DXMATERIAL* pMat;
-
-		// マテリアルデータへのポインタを取得
-		pMat = (D3DXMATERIAL*)g_amodeldata[nCntModeldata].pBuffMat->GetBufferPointer();
-
-		for (int nCntMat = 0; nCntMat < (int)g_amodeldata[nCntModeldata].dwNumMat; nCntMat++)
-		{
-			if (pMat[nCntMat].pTextureFilename != NULL)
-			{// テクスチャファイルが存在する
-				// テクスチャの読み込み
-				D3DXCreateTextureFromFile(pDevice,
-					pMat[nCntMat].pTextureFilename,
-					&g_amodeldata[nCntModeldata].apTexture[nCntMat]);
-			}
-		}
-
-		// 頂点数を取得
-		g_amodeldata[nCntModeldata].nNumVtx = g_amodeldata[nCntModeldata].pMesh->GetNumVertices();
-
-		// インデックス数を取得
-		g_amodeldata[nCntModeldata].nNumIdx = g_amodeldata[nCntModeldata].pMesh->GetNumFaces();
-
-		// 頂点フォーマットのサイズを取得
-		g_amodeldata[nCntModeldata].dwSizeFVF = D3DXGetFVFVertexSize(g_amodeldata[nCntModeldata].pMesh->GetFVF());
-
-		// 頂点バッファをロック
-		g_amodeldata[nCntModeldata].pMesh->LockVertexBuffer(D3DLOCK_READONLY, (void**)&pVtxBuff);
-
-		for (int nCntVtx = 0; nCntVtx < g_amodeldata[nCntModeldata].nNumVtx; nCntVtx++)
-		{
-			D3DXVECTOR3 vtx = *(D3DXVECTOR3*)pVtxBuff;	// 頂点情報の代入
-
-			if (vtx.x > g_amodeldata[nCntModeldata].vtxMax.x)
-			{
-				g_amodeldata[nCntModeldata].vtxMax.x = vtx.x;
-			}
-
-			if (vtx.y > g_amodeldata[nCntModeldata].vtxMax.y)
-			{
-				g_amodeldata[nCntModeldata].vtxMax.y = vtx.y;
-			}
-
-			if (vtx.z > g_amodeldata[nCntModeldata].vtxMax.z)
-			{
-				g_amodeldata[nCntModeldata].vtxMax.z = vtx.z;
-			}
-
-			if (vtx.x < g_amodeldata[nCntModeldata].vtxMin.x)
-			{
-				g_amodeldata[nCntModeldata].vtxMin.x = vtx.x;
-			}
-
-			if (vtx.y < g_amodeldata[nCntModeldata].vtxMin.y)
-			{
-				g_amodeldata[nCntModeldata].vtxMin.y = vtx.y;
-			}
-
-			if (vtx.z < g_amodeldata[nCntModeldata].vtxMin.z)
-			{
-				g_amodeldata[nCntModeldata].vtxMin.z = vtx.z;
-			}
-
-			pVtxBuff += g_amodeldata[nCntModeldata].dwSizeFVF;		// 頂点フォーマットのサイズ分ポインタを進める
-		}
-
-		// 頂点バッファのアンロック
-		g_amodeldata[nCntModeldata].pMesh->UnlockVertexBuffer();
-
-		//// インデックスバッファをロック
-		//g_amodeldata[nCntModeldata].pMesh->LockIndexBuffer(D3DLOCK_READONLY, (void**)&pIdxBuff);
-
-		////for (int nCntIdx = 0; nCntIdx < nNumIdx * 3; nCntIdx++)
-		////{
-		////	g_amodeldata->nIdx[nCntIdx] = *pIdxBuff;	// 頂点情報の代入
-
-		////	pIdxBuff += 2;
-		////}
-
-		//// 頂点インデックスバッファのアンロック
-		//g_amodeldata[nCntModeldata].pMesh->UnlockIndexBuffer();
-
-	}
-
-
 	for (int nCntModel = 0; nCntModel < MAX_MODEL; nCntModel++)
 	{
 		g_amodel[nCntModel].pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
@@ -149,6 +51,7 @@ void InitModel(void)
 	}
 
 	g_nNumModel = -1;
+	g_nNumModelData = 0;
 	g_nSelectModel = -1;
 	g_nSelectType = 0;
 	g_fModelMove = 1.0f;
@@ -215,15 +118,15 @@ void DrawModel(void)
 	D3DMATERIAL9 matDef;						// 現在のマテリアル保存用
 	D3DXMATERIAL* pMat;							// マテリアルデータへのポインタ
 
-	Model* pModel = &g_amodel[0];
+	Model* pModel = &g_amodel[0];				// モデルのポインタ
 
 	for (int nCntModel = 0; nCntModel < MAX_MODEL; nCntModel++, pModel++)
 	{
 		if (pModel->bUse == false)
-		{
+		{// 使われていなければ戻る
 			continue;
 		}
-
+		
 		// ワールドマトリックスの初期化
 		D3DXMatrixIdentity(&pModel->mtxWorld);
 
@@ -291,7 +194,7 @@ void UpdateModel(void)
 
 	if (GetKeyboardTrigger(DIK_RETURN) == true)
 	{
-		SetModel(INIT_D3DXVEC3, INIT_D3DXVEC3, D3DXVECTOR3(1.0f, 1.0f, 1.0f), (MODELTYPE)g_nSelectType);
+		//SetModel(INIT_D3DXVEC3, INIT_D3DXVEC3, D3DXVECTOR3(1.0f, 1.0f, 1.0f), (MODELTYPE)g_nSelectType);
 	}
 
 	if (GetKeyboardPress(DIK_T) == true)
@@ -478,6 +381,112 @@ void SetModel(D3DXVECTOR3 pos, D3DXVECTOR3 rot, D3DXVECTOR3 scale, MODELTYPE mod
 		g_amodel[nCntModel].bUse = true;
 		break;
 	}
+}
+
+//=============================================================================
+//	モデルの読み込み処理
+//=============================================================================
+void LoadModelData(const char* pModelFile)
+{
+	Modeldata* pModel = &g_amodeldata[g_nNumModelData];
+
+	// デバイスの取得
+	LPDIRECT3DDEVICE9 pDevice = GetDevice();
+
+	BYTE* pVtxBuff;								// 頂点バッファへのポインタ
+
+	// Xファイルの読み込み
+	D3DXLoadMeshFromX(pModelFile,
+		D3DXMESH_SYSTEMMEM,
+		pDevice,
+		NULL,
+		&pModel->pBuffMat,
+		NULL,
+		&pModel->dwNumMat,
+		&pModel->pMesh);
+
+	D3DXMATERIAL* pMat;
+
+	// マテリアルデータへのポインタを取得
+	pMat = (D3DXMATERIAL*)pModel->pBuffMat->GetBufferPointer();
+
+	for (int nCntMat = 0; nCntMat < (int)pModel->dwNumMat; nCntMat++)
+	{
+		if (pMat[nCntMat].pTextureFilename != NULL)
+		{// テクスチャファイルが存在する
+			// テクスチャの読み込み
+			D3DXCreateTextureFromFile(pDevice,
+				pMat[nCntMat].pTextureFilename,
+				&pModel->apTexture[nCntMat]);
+		}
+	}
+
+	// 頂点数を取得
+	pModel->nNumVtx = pModel->pMesh->GetNumVertices();
+
+	// インデックス数を取得
+	pModel->nNumIdx = pModel->pMesh->GetNumFaces();
+
+	// 頂点フォーマットのサイズを取得
+	pModel->dwSizeFVF = D3DXGetFVFVertexSize(pModel->pMesh->GetFVF());
+
+	// 頂点バッファをロック
+	pModel->pMesh->LockVertexBuffer(D3DLOCK_READONLY, (void**)&pVtxBuff);
+
+	for (int nCntVtx = 0; nCntVtx < pModel->nNumVtx; nCntVtx++)
+	{
+		D3DXVECTOR3 vtx = *(D3DXVECTOR3*)pVtxBuff;	// 頂点情報の代入
+
+		if (vtx.x > pModel->vtxMax.x)
+		{
+			pModel->vtxMax.x = vtx.x;
+		}
+
+		if (vtx.y > pModel->vtxMax.y)
+		{
+			pModel->vtxMax.y = vtx.y;
+		}
+
+		if (vtx.z > pModel->vtxMax.z)
+		{
+			pModel->vtxMax.z = vtx.z;
+		}
+
+		if (vtx.x < pModel->vtxMin.x)
+		{
+			pModel->vtxMin.x = vtx.x;
+		}
+
+		if (vtx.y < pModel->vtxMin.y)
+		{
+			pModel->vtxMin.y = vtx.y;
+		}
+
+		if (vtx.z < pModel->vtxMin.z)
+		{
+			pModel->vtxMin.z = vtx.z;
+		}
+
+		pVtxBuff += pModel->dwSizeFVF;		// 頂点フォーマットのサイズ分ポインタを進める
+	}
+
+	// 頂点バッファのアンロック
+	pModel->pMesh->UnlockVertexBuffer();
+
+	g_nNumModelData++;
+
+	//// インデックスバッファをロック
+	//g_amodeldata[nCntModeldata].pMesh->LockIndexBuffer(D3DLOCK_READONLY, (void**)&pIdxBuff);
+
+	////for (int nCntIdx = 0; nCntIdx < nNumIdx * 3; nCntIdx++)
+	////{
+	////	g_amodeldata->nIdx[nCntIdx] = *pIdxBuff;	// 頂点情報の代入
+
+	////	pIdxBuff += 2;
+	////}
+
+	//// 頂点インデックスバッファのアンロック
+	//g_amodeldata[nCntModeldata].pMesh->UnlockIndexBuffer();
 }
 
 void CollisionMeshModelTest(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld)

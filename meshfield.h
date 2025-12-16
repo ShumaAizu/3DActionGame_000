@@ -58,5 +58,7 @@ void UpdateMeshField(void);
 void DrawMeshField(void);
 void SetMeshField(D3DXVECTOR3 pos, D3DXVECTOR3 rot, float fWidth, float fDepth, int nSplitWidth, int nSplitDepth, MESHFIELDTYPE type);
 PMESHFIELD CollisionMeshField(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTOR3* pMove);
+void SetMesh(D3DXVECTOR3 pos, D3DXVECTOR3 rot, int nVtx, D3DXVECTOR3* VtxPos, int nSplitWidth, int nSplitDepth, MESHFIELDTYPE type);
+void LoadMesh(const char* pFileName);
 
 #endif

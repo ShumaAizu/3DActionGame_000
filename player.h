@@ -15,9 +15,10 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define PLAYER_WIDTH			(5.0f)			// プレイヤーの幅
-#define PLAYER_HEIGHT			(5.0f)			// プレイヤーの高さ
+#define PLAYER_RADIUS			(15.0f)				// プレイヤーの半径
 #define PLAYER_SPEED			(0.115f)			// プレイヤーの速さ
+#define MAX_POSLOG				(15)				// 過去の位置の記録の最大数
+#define POSLOGCOUNT				(10)				// ログを保存するまでのカウント
 
 //*****************************************************************************
 // プレイヤーの状態
@@ -62,12 +63,15 @@ typedef struct
 	D3DXVECTOR3 rot;							// 向き
 	D3DXVECTOR3 move;							// 移動量
 	PLAYERSTATE	state;							// 状態
+	float fRadius;								// 半径
+	int nNumFriends;							// 仲間の数
 	int nChangeCounter;							// モード切替カウンター
 	float fSpeed;								// 速度
 	float fInertia;								// 慣性
 	bool bJump;									// ジャンプ状態
 	float fMoveKeyboard;						// キーボード操作による移動量
 	int nIdxShadow;								// 影のインデックス
+	int nIdxPosLog;								// 過去の位置のログのインデックス
 	PMESHFIELD pRideField;						// 乗っているフィールド
 
 	D3DXMATRIX mtxWorld;						// ワールドマトリックス
@@ -86,5 +90,7 @@ void UpdateMotion(void);
 void LoadPartsPlayer(const char* pPartsFile);
 void LoadCharacterPlayer(D3DXVECTOR3 pos, D3DXVECTOR3 rot, int nIdxModel, int nIdxModelParent);
 void LoadMotion(bool bLoop, int nNumKey, KEY_INFO* pKeyInfo, int nMotion);
+int FriendsAdd(D3DXVECTOR3** posDest);
+void UpdatePosLog(int nIdxPosLog, D3DXVECTOR3 pos);
 
 #endif

@@ -1,40 +1,40 @@
 //=============================================================================
 //
-//	モデル処理 [model.h]
+//	アイテム処理 [item.h]
 //	Author : SHUMA AIZU
 // 
 //=============================================================================
 
-#ifndef _MODEL_H_
-#define _MODEL_H_
+#ifndef _ITEM_H_
+#define _ITEM_H_
 
 #include "main.h"
 
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define MODEL_WIDTH				(5.0f)			// モデルの幅
-#define MODEL_HEIGHT			(5.0f)			// モデルの高さ
-#define MAX_MODELTEX			(16)			// 読み込むテクスチャの最大数
+#define ITEM_WIDTH				(5.0f)			// アイテムの幅
+#define ITEM_HEIGHT			(5.0f)			// アイテムの高さ
+#define MAX_ITEMTEX			(16)			// 読み込むテクスチャの最大数
 #define MAX_IDX					(512)		// 
 
 //*****************************************************************************
-// モデルの種類
+// アイテムの種類
 //*****************************************************************************
 typedef enum
 {
-	MODELTYPE_000 = 0,
-	MODELTYPE_001,
-	MODELTYPE_002,
-	MODELTYPE_MAX
-}MODELTYPE;
+	ITEMTYPE_000 = 0,
+	ITEMTYPE_001,
+	ITEMTYPE_002,
+	ITEMTYPE_MAX
+}ITEMTYPE;
 
 //*****************************************************************************
-// モデルデータの構造体定義
+// アイテムデータの構造体定義
 //*****************************************************************************
 typedef struct
 {
-	LPDIRECT3DTEXTURE9 apTexture[MAX_MODELTEX];	// テクスチャへのポインタ
+	LPDIRECT3DTEXTURE9 apTexture[MAX_ITEMTEX];	// テクスチャへのポインタ
 	LPDIRECT3DVERTEXBUFFER9 pVtxBuff;			// 頂点バッファへのポインタ
 	LPD3DXMESH pMesh;							// メッシュへのポインタ
 	LPD3DXBUFFER pBuffMat;						// マテリアルへのポインタ
@@ -44,10 +44,10 @@ typedef struct
 	DWORD dwSizeFVF;							// 頂点フォーマットのサイズ
 	int nNumVtx;								// 頂点数
 	int nNumIdx;								// インデックス数
-}Modeldata;
+}Itemdata;
 
 //*****************************************************************************
-// モデルの構造体定義
+// アイテムの構造体定義
 //*****************************************************************************
 typedef struct
 {
@@ -55,21 +55,21 @@ typedef struct
 	D3DXVECTOR3 rot;							// 向き
 	D3DXVECTOR3 scale;							// 大きさ
 	D3DXMATRIX mtxWorld;						// ワールドマトリックス
-	MODELTYPE modeltype;						// モデルの種類
+	ITEMTYPE itemtype;						// アイテムの種類
 	bool bCollision;							// 当たり判定するかどうか
 	bool bUse;									// 使用状態
-}Model;
+}Item;
 
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
-void InitModel(void);
-void UninitModel(void);
-void UpdateModel(void);
-void DrawModel(void);
-void CollisionModel(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTOR3* pMove, D3DXVECTOR3 vtxMin, D3DXVECTOR3 vtxMax);
-void CollisionMeshModelTest(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld);
-void LoadModelData(const char* pModelFile);
-void SetModel(D3DXVECTOR3 pos, D3DXVECTOR3 rot, D3DXVECTOR3 scale, MODELTYPE modeltype);
+void InitItem(void);
+void UninitItem(void);
+void UpdateItem(void);
+void DrawItem(void);
+void CollisionItem(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTOR3* pMove, D3DXVECTOR3 vtxMin, D3DXVECTOR3 vtxMax);
+void CollisionMeshItemTest(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld);
+void LoadItemData(const char* pItemFile);
+void SetItem(D3DXVECTOR3 pos, D3DXVECTOR3 rot, D3DXVECTOR3 scale, ITEMTYPE itemtype);
 
 #endif

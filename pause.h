@@ -21,7 +21,6 @@ typedef enum
 {
 	PAUSE_MENU_CONTINUE = 0,		// ゲームに戻る
 	PAUSE_MENU_RESTART,				// ゲームをやり直す
-	PAUSE_MENU_STAGESELECT,			// ステージ選択に戻る
 	PAUSE_MENU_QUIT,				// タイトル画面に戻る
 	PAUSE_MENU_MAX					// 
 }PAUSE_MENU;

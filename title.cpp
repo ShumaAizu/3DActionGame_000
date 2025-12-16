@@ -11,6 +11,8 @@
 #include "sound.h"
 #include "fade.h"
 
+#include "model.h"
+
 //*****************************************************************************
 // É}ÉNÉçíËã`
 //*****************************************************************************
@@ -45,7 +47,7 @@ void UninitTitle(void)
 //====================================
 void DrawTitle(void)
 {
-
+	DrawModel();
 }
 
 //====================================
@@ -53,6 +55,8 @@ void DrawTitle(void)
 //====================================
 void UpdateTitle(void)
 {
+	UpdateModel();
+
 	if (GetKeyboardTrigger(DIK_RETURN) == true)
 	{
 		SetFade(MODE_GAME, DEFAULT_FADESPEED, DEFAULT_FADESPEED);
