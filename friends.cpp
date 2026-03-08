@@ -7,6 +7,9 @@
 
 #include "main.h"
 #include "friends.h"
+#include "game.h"
+#include "result.h"
+#include "player.h"
 #include "bullet.h"
 #include "effect.h"
 #include "particle.h"
@@ -18,6 +21,8 @@
 #include "meshfield.h"
 
 #include "snow.h"
+#include "request.h"
+#include "item.h"
 
 #include "debugproc.h"
 
@@ -27,14 +32,21 @@
 #define MAX_FRIENDSTEX		(16)		// 読み込むテクスチャの最大数
 #define GRAVITY				(-0.25f)	// 重力
 #define FRIENDS_JUMP		(5.0f)		// ジャンプ力
+#define ONELAPFRAME			(300)		// 移動状態で一周するフレーム数
+#define ONELAPRADIUS		(175.0f)	// 一周の半径
+#define SHORTAGE_NUM		(5)			// 人数不足の基準
 
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
 Friends g_afriends[MAX_FRIENDS];						// 仲間の情報
 FriendsInfo g_afriendsInfo[FRIENDSTYPE_MAX];			// 仲間の各情報保持用
+FRIENDSTYPE g_afriendstype[MAX_FRIENDS];				// 仲間の種類
 int g_nNumFriends;										// 現在の仲間の使用数
 int g_nNumFriendsInfo;									// 現在の情報保持数
+int g_nFriends;											// 現在の仲間になっている数
+int g_nFriendsResult;									// リザルト用仲間になっている数
+int g_nSelectFriends;
 
 //=============================================================================
 //	仲間の初期化処理
@@ -53,13 +65,18 @@ void InitFriends(void)
 	for (int nCntFriends = 0; nCntFriends < MAX_FRIENDS; nCntFriends++, pFriends++)
 	{
 		// 初期化
-		//pFriends->move = D3DXVECTOR3(1.0f, 0.0f, 1.0f);
 		pFriends->nIdxShadow = -1;
 		pFriends->fSpeed = FRIENDS_SPEED;
 		pFriends->nIdxPosLog = -1;
+		pFriends->nIdxRequest = -1;
+		pFriends->nIdxTutorial = -1;
+		pFriends->nChangeCounter = rand() % 25 + 15;
 	}
 
 	g_nNumFriendsInfo = 0;
+	g_nNumFriends = 0;
+	g_nFriends = 0;
+	g_nSelectFriends = 0;
 }
 
 //=============================================================================
@@ -161,6 +178,7 @@ void DrawFriends(void)
 			// マテリアルデータへのポインタを取得
 			pMat = (D3DXMATERIAL*)pFriends->aOffSetModel[nCntOffSetModel].pBuffMat->GetBufferPointer();
 
+
 			for (int nCntMat = 0; nCntMat < (int)pFriends->aOffSetModel[nCntOffSetModel].dwNumMat; nCntMat++)
 			{
 				// マテリアルの設定
@@ -185,6 +203,35 @@ void DrawFriends(void)
 void UpdateFriends(void)
 {
 	PFRIENDS pFriends = &g_afriends[0];		// ポインタ取得
+#ifdef _DEBUG
+	PrintDebugProc("仲間数 %d\n", g_nFriends);
+
+	if (GetKeyboardPress(DIK_T) == true)
+	{
+		g_afriends[g_nSelectFriends].pos.z += 1.0f;
+	}
+
+	if (GetKeyboardPress(DIK_G) == true)
+	{
+		g_afriends[g_nSelectFriends].pos.z += -1.0f;
+	}
+
+	if (GetKeyboardPress(DIK_F) == true)
+	{
+		g_afriends[g_nSelectFriends].pos.x += -1.0f;
+	}
+
+	if (GetKeyboardPress(DIK_H) == true)
+	{
+		g_afriends[g_nSelectFriends].pos.x += 1.0f;
+	}
+#endif
+	PrintDebugProc("FriendsPos = { %.2f %.2f %.2f }\n", g_afriends[g_nSelectFriends].pos.x, g_afriends[g_nSelectFriends].pos.y, g_afriends[g_nSelectFriends].pos.z);
+
+	if (g_nFriends >= g_nNumFriends && GetNextGameFlag() != GAMEFLAG_CLEAR)
+	{
+		SetGameFlag(GAMEFLAG_CLEAR, 90);
+	}
 
 	for (int nCntFrinds = 0; nCntFrinds < MAX_FRIENDS; nCntFrinds++, pFriends++)
 	{
@@ -193,16 +240,99 @@ void UpdateFriends(void)
 			continue;
 		}
 
+		if (GetMode() == MODE_TITLE && pFriends->type != FRIENDSTYPE_002)
+		{
+			pFriends->nChangeCounter--;
+			if (pFriends->nChangeCounter < 0)
+			{
+				SetMotionFriends(MOTIONTYPE_REACTION, false, true, 10, pFriends);
+				pFriends->nChangeCounter = rand() % 240 + 60;
+			}
+		}
+
+		if (GetMode() == MODE_RESULT)
+		{
+			pFriends->nChangeCounter--;
+			if (pFriends->nChangeCounter < 0)
+			{
+				SetMotionFriends(MOTIONTYPE_REACTION, false, true, 10, pFriends);
+				pFriends->nChangeCounter = rand() % 600 + 60;
+			}
+		}
+
 		pFriends->posOld = pFriends->pos;		// 過去の位置更新
+
+		switch (pFriends->event)
+		{
+		case FRIENDEVENT_REQUEST:
+
+			break;
+
+		case FRIENDEVENT_JUMP:
+			pFriends->nChangeCounter--;
+			if (pFriends->bJump == false && pFriends->nChangeCounter < 0)
+			{// ジャンプ状態じゃない
+				SetMotionFriends(MOTIONTYPE_JUMP, true, false, 10, pFriends);
+				pFriends->substate = FRIENDSSUBSTATE_JUMP;
+				pFriends->move.y = FRIENDS_JUMP;
+				pFriends->bJump = true;
+				pFriends->nChangeCounter = 60;
+			}
+			break;
+
+		case FRIENDEVENT_MOVE:
+			D3DXVECTOR3 posDest = {};
+
+			pFriends->fMoveAngle += D3DX_PI / ONELAPFRAME;
+
+			pFriends->fMoveAngle = AngleNormalize(pFriends->fMoveAngle);
+
+			posDest.x = pFriends->posInit.x + sinf(pFriends->fMoveAngle) * ONELAPRADIUS;
+			posDest.z = pFriends->posInit.z + cosf(pFriends->fMoveAngle) * ONELAPRADIUS;
+
+			pFriends->rot.y = atan2f(pFriends->pos.x - posDest.x, pFriends->pos.z - posDest.z);
+
+			pFriends->rot.y = AngleNormalize(pFriends->rot.y);
+
+			pFriends->pos.x = posDest.x;
+			pFriends->pos.z = posDest.z;
+
+			if (pFriends->substate != FRIENDSSUBSTATE_MOVE)
+			{
+				SetMotionFriends(MOTIONTYPE_MOVE, true, true, 10, pFriends);
+				pFriends->substate = FRIENDSSUBSTATE_MOVE;
+			}
+
+			break;
+		}
 
 		// 状態確認
 		switch (pFriends->state)
 		{
 			// フレンズ状態なら
 		case FRIENDSSTATE_FRIENDS:
-			pFriends->vecDest = *pFriends->posDest - pFriends->pos;	// 目的向きを計算
-			pFriends->vecDest.y = 0.0f;								// y方向は無視
-			pFriends->move = pFriends->vecDest * pFriends->fSpeed;	// 目的向きに速度をかける
+
+			if (pFriends->motiontypeBlend == MOTIONTYPE_REACTION)
+			{
+				break;
+			}
+
+			pFriends->vecDest = *pFriends->posDest - pFriends->pos;		// 目的向きを計算
+			pFriends->vecDest.y = 0.0f;									// y方向は無視
+			pFriends->move.x = pFriends->vecDest.x * pFriends->fSpeed;	// 目的向きに速度をかける
+			pFriends->move.z = pFriends->vecDest.z * pFriends->fSpeed;	// 目的向きに速度をかける
+
+			if (SQRTF(pFriends->move.x, pFriends->move.z) > 0.1f && pFriends->substate != FRIENDSSUBSTATE_MOVE)
+			{
+				SetMotionFriends(MOTIONTYPE_MOVE, true, true, 10, pFriends);
+				pFriends->substate = FRIENDSSUBSTATE_MOVE;
+			}
+
+			if( SQRTF(pFriends->move.x, pFriends->move.z) < 0.1f && pFriends->substate != FRIENDSSUBSTATE_NUETRAL)
+			{
+				SetMotionFriends(MOTIONTYPE_NEUTRAL, true, true, 10, pFriends);
+				pFriends->substate = FRIENDSSUBSTATE_NUETRAL;
+			}
 
 			pFriends->rotDest.y = atan2f(pFriends->move.x, pFriends->move.z) - D3DX_PI;	// 目的向きを向かせる
 
@@ -223,30 +353,27 @@ void UpdateFriends(void)
 
 			pFriends->rot.y = AngleNormalize(pFriends->rot.y);
 
-			pFriends->nPosLogCounter++;		// 記録までのカウンターを加算
+			if (pFriends->substate == FRIENDSSUBSTATE_MOVE)
+			{
+				pFriends->nPosLogCounter++;		// 記録までのカウンターを加算
 
-			if (pFriends->nPosLogCounter == POSLOGCOUNT)
-			{// 一定の値になったら記録する
-				UpdatePosLog(pFriends->nIdxPosLog, pFriends->pos);
-				pFriends->nPosLogCounter = 0;
+				if (pFriends->nPosLogCounter == POSLOGCOUNT)
+				{// 一定の値になったら記録する
+					UpdatePosLog(pFriends->nIdxPosLog, pFriends->pos);
+					pFriends->nPosLogCounter = 0;
+				}
 			}
 
 			break;
 		}
 
-		//pFriends->move.y += GRAVITY;			// 重力をかける
+		pFriends->move.y += GRAVITY;			// 重力をかける
+
 		pFriends->pos += pFriends->move;		// 位置を更新
 
 		// 慣性を更新
 		pFriends->move.x += (0.0f - pFriends->move.x) * pFriends->fInertia;
 		pFriends->move.z += (0.0f - pFriends->move.z) * pFriends->fInertia;
-
-
-		if (pFriends->pos.y < 0.0f)
-		{
-			pFriends->move.y = GRAVITY;
-			pFriends->bJump = false;
-		}
 
 		// 壁との当たり判定
 		CollisionMeshWall(&pFriends->pos, &pFriends->posOld, &pFriends->move);
@@ -268,22 +395,41 @@ void UpdateFriends(void)
 				break;
 
 			case MESHFIELDTYPE_SEA:
-				pFriends->pos = D3DXVECTOR3(0.0f, 0.0f, -1500.0f);
+				if (*pFriends->posDest != NULL)
+				{
+					pFriends->pos = *pFriends->posDest;
+				}
 				break;
+			}
+
+			if (pFriends->pRideField->type != MESHFIELDTYPE_SEA)
+			{// 海以外に乗っていれば
+				// 最後の着地点を記録
+				pFriends->posOldRand = pFriends->pos;
 			}
 
 			if (pFriends->bJump == true)
 			{
 				SetMotionFriends(MOTIONTYPE_LANDING, false, true, 10, pFriends);
 				pFriends->state = FRIENDSSTATE_NUETRAL;
+				pFriends->bJump = false;
 			}
+
+			// 影の位置を更新
+			SetPositionShadow(pFriends->nIdxShadow, D3DXVECTOR3(pFriends->pos.x, pFriends->pos.y, pFriends->pos.z));
 		}
+		else
+		{
+			// 影の位置を更新
+			SetPositionShadow(pFriends->nIdxShadow, D3DXVECTOR3(pFriends->pos.x, pFriends->posOldRand.y, pFriends->pos.z));
+		}
+
+		SetPositionReqest(pFriends->nIdxRequest, pFriends->pos, pFriends->rot);
+
+		SetPositionReqest(pFriends->nIdxTutorial, pFriends->pos, pFriends->rot);
 
 		// モデルとの当たり判定
 		CollisionModel(&pFriends->pos, &pFriends->posOld, &pFriends->move, D3DXVECTOR3(10.0f, 10.0f, 10.0f), D3DXVECTOR3(10.0f, 10.0f, 10.0f));
-
-		// 影の位置を更新
-		SetPositionShadow(pFriends->nIdxShadow, D3DXVECTOR3(pFriends->pos.x, pFriends->pos.y - pFriends->pos.y, pFriends->pos.z));
 
 		// 全モデル更新
 		UpdateMotionFriends(pFriends);
@@ -528,6 +674,7 @@ void UpdateMotionFriends(Friends *pFriends)
 			pFriends->nCounterBlend = 0;									// カウンターリセット
 			pFriends->motiontype = pFriends->motiontypeBlend;				// 次のモーションに切り替える
 			pFriends->nCounterMotion = pFriends->nCounterMotionBlend;		// モーションカウンターをブレンドと同期
+			pFriends->nNumKey = pFriends->nNumKeyBlend;						// キーの総数をブレンドと同期
 			pFriends->nKey = pFriends->nKeyBlend;							// キー番号をブレンドと同期
 			pFriends->bLoopMotion = pFriends->bLoopMotionBlend;				// ループ状態をブレンドと同期
 			pFriends->bBlendMotion = false;									// ブレンド状態を終了
@@ -564,13 +711,37 @@ void SetFriends(D3DXVECTOR3 pos, D3DXVECTOR3 rot, FRIENDSTYPE type, FRIENDEVENT 
 			continue;
 		}
 
+		Camera* pCamera = GetCamera();
+
 		// 各変数を設定
 		pFriends->pos = pos;
-		pFriends->rot = rot;
+		pFriends->posInit = pos;
+		pFriends->rot = rot * D3DX_PI;
+		pFriends->fMoveAngle = pFriends->rot.y;
 		pFriends->type = type;
 		pFriends->event = event;
 		pFriends->nIdxShadow = SetShadow();
+
+		switch (event)
+		{
+		case FRIENDEVENT_REQUEST:
+			pFriends->nIdxRequest = SetRequest(D3DXVECTOR3(pos.x + sinf(AngleNormalize(pFriends->rot.y + 0.5f * D3DX_PI)) * 32.5f,
+				pos.y + 50.0f, pos.z + cosf(AngleNormalize(pFriends->rot.y + 0.5f * D3DX_PI)) * 32.5f), REQUESTTYPE_000);
+			break;
+
+		case FRIENDEVENT_SHORTAGE:
+			pFriends->nIdxRequest = SetRequest(D3DXVECTOR3(pos.x + sinf(AngleNormalize(pFriends->rot.y + 0.5f * D3DX_PI)) * 32.5f,
+				pos.y + 50.0f, pos.z + cosf(AngleNormalize(pFriends->rot.y + 0.5f * D3DX_PI)) * 32.5f), REQUESTTYPE_002);
+			break;
+		}
+
+		pFriends->nIdxTutorial = SetRequest(D3DXVECTOR3(pos.x, pos.y + 75.0f, pos.z), REQUESTTYPE_TUTORIAL);
 		pFriends->bUse = true;
+
+		if (event != FRIENDEVENT_NONE)
+		{
+			pFriends->state = FRIENDSSTATE_EVENT;
+		}
 
 		// 種別で半径を設定
 		switch (type)
@@ -580,6 +751,10 @@ void SetFriends(D3DXVECTOR3 pos, D3DXVECTOR3 rot, FRIENDSTYPE type, FRIENDEVENT 
 			break;
 
 		case FRIENDSTYPE_001:
+			pFriends->fRadius = PENGUIN_RADIUS;
+			break;
+
+		case FRIENDSTYPE_002:
 			pFriends->fRadius = SNOWMAN_RADIUS;
 			break;
 		}
@@ -598,6 +773,7 @@ void SetFriends(D3DXVECTOR3 pos, D3DXVECTOR3 rot, FRIENDSTYPE type, FRIENDEVENT 
 			pFriends->aOffSetModel[nCntOffSetModel] = pFriendsInfo->aOffSetModel[nCntOffSetModel];
 		}
 
+		g_nNumFriends++;
 		SetMotionFriends(MOTIONTYPE_NEUTRAL, true, false, 0, pFriends);
 		break;
 	}
@@ -680,11 +856,43 @@ void LoadMotionFriends(bool bLoop, int nNumKey, KEY_INFO* pKeyInfo, int nMotion)
 }
 
 //=============================================================================
-//	仲間の状態管理処理
+//	仲間のイベント管理処理
 //=============================================================================
-void FriendsStateController(PFRIENDS pFriends, FRIENDSSTATE state)
+bool FriendsEventController(PFRIENDS pFriends)
 {
+	switch (pFriends->event)
+	{
+	case FRIENDEVENT_REQUEST:
+		if (GetItem() == ITEMTYPE_000)
+		{
+			SetCurrentItem();
+			return true;
+		}
 
+		SetJoypadVibration(10000, 16000, 6);
+		SetMotionFriends(MOTIONTYPE_BUTREACTION, false, true, 10, pFriends);
+		PlaySound(SOUND_LABEL_BUTREACTIONSE001);
+		return false;
+		break;
+
+	case FRIENDEVENT_JUMP:
+		return true;
+		break;
+
+	case FRIENDEVENT_SHORTAGE:
+		if (g_nFriends >= SHORTAGE_NUM)
+		{
+			return true;
+		}
+
+		SetJoypadVibration(10000, 16000, 6);
+		SetMotionFriends(MOTIONTYPE_BUTREACTION, false, true, 10, pFriends);
+		PlaySound(SOUND_LABEL_BUTREACTIONSE001);
+		return false;
+		break;
+	}
+
+	return true;
 }
 
 //=============================================================================
@@ -696,6 +904,30 @@ void NumFriendsAdd(void)
 }
 
 //=============================================================================
+//	仲間の数取得処理
+//=============================================================================
+int GetNumFriends(void)
+{
+	return g_nFriends;
+}
+
+//=============================================================================
+//	仲間の数取得処理
+//=============================================================================
+void SetNumResultFriends(void)
+{
+	g_nFriendsResult = g_nFriends;
+}
+
+//=============================================================================
+//	仲間の数取得処理 (リザルト用)
+//=============================================================================
+int GetNumResultFriends(void)
+{
+	return g_nFriendsResult;
+}
+
+//=============================================================================
 //	仲間の当たり判定処理
 //=============================================================================
 bool CollisionFriends(D3DXVECTOR3* pPos, float fRadius)
@@ -703,36 +935,62 @@ bool CollisionFriends(D3DXVECTOR3* pPos, float fRadius)
 	PFRIENDS pFriends = &g_afriends[0];
 
 	float fDiff = 0.0f;
-	D3DXVECTOR3 vecToFriends = {};
 
 	for (int nCntFriends = 0; nCntFriends < MAX_FRIENDS; nCntFriends++, pFriends++)
 	{
-		if (pFriends->bUse == false || pFriends->state == FRIENDSSTATE_FRIENDS)
+		if (pFriends->bUse == false || pFriends->state == FRIENDSSTATE_FRIENDS || pFriends->bJump == true)
 		{
 			continue;
 		}
 
 		fDiff = powf(pFriends->pos.x - pPos->x, 2) + powf(pFriends->pos.y - pPos->y, 2) + powf(pFriends->pos.z - pPos->z, 2);
 
-		if (fDiff <= powf(fRadius + pFriends->fRadius, 2.0f))
+		if (fDiff <= powf(fRadius + pFriends->fRadius, 2))
 		{
-			if (GetKeyboardTrigger(DIK_9) == true)
-			{
+			SetRequestDisp(pFriends->nIdxRequest, true);
+			SetRequestDisp(pFriends->nIdxTutorial, true);
+
+			if (GetKeyboardTrigger(DIK_RETURN) == true || GetJoypadTrigger(JOYKEY_X) == true)
+			{// 当たっているときに特定のキーを押したら
 				if (pFriends->state == FRIENDSSTATE_EVENT)
-				{
-
+				{// イベント状態だったら
+					if (FriendsEventController(pFriends) == false)
+					{
+						continue;
+					}
 				}
-				else
-				{
-					pFriends->nIdxPosLog = FriendsAdd(&pFriends->posDest);
 
-					pFriends->state = FRIENDSSTATE_FRIENDS;
+				// 仲間にする
+				g_nFriends = pFriends->nIdxPosLog = FriendsAdd(&pFriends->posDest);	// 仲間数とインデックス番号を取得
 
-					SetMotionFriends(MOTIONTYPE_ACTION, false, true, 10, pFriends);
+				pFriends->state = FRIENDSSTATE_FRIENDS;								// 状態を仲間に
 
-					return true;
-				}
+				pFriends->substate = FRIENDSSUBSTATE_NUETRAL;
+
+				pFriends->event = FRIENDEVENT_NONE;
+
+				SetMotionFriends(MOTIONTYPE_REACTION, false, true, 10, pFriends);	// リアクションモーション
+
+				SetJoypadVibration(6000, 3000, 15);									// 振動設定
+
+				SetPlayerEvent(PLAYEREVENT_FRIENDS);								// イベント設定
+
+				ReleaseReqest(pFriends->nIdxRequest);
+
+				ReleaseReqest(pFriends->nIdxTutorial);
+
+				pFriends->rot.y = atan2f(pFriends->pos.x - pPos->x, pFriends->pos.z - pPos->z);
+
+				PlaySound(SOUND_LABEL_REACTIONSE000);
+
+				return true;
+				
 			}
+		}
+		else
+		{
+			SetRequestDisp(pFriends->nIdxRequest, false);
+			SetRequestDisp(pFriends->nIdxTutorial, false);
 		}
 	}
 
@@ -740,5 +998,79 @@ bool CollisionFriends(D3DXVECTOR3* pPos, float fRadius)
 }
 
 //=============================================================================
-//	仲間のイベント処理
+//	仲間の保存処理
 //=============================================================================
+void SaveFriends(void)
+{
+	PFRIENDS pFriends = &g_afriends[0];
+	FRIENDSTYPE* pFriendType = &g_afriendstype[0];
+
+	memset(pFriendType, NULL, sizeof(FRIENDSTYPE) * MAX_FRIENDS);
+
+	for (int nCntFriends = 0; nCntFriends < MAX_FRIENDS; nCntFriends++, pFriends++)
+	{
+		if (pFriends->state != FRIENDSSTATE_FRIENDS)
+		{
+			continue;
+		}
+
+		*pFriendType = pFriends->type;
+
+		pFriendType++;
+	}
+}
+
+//=============================================================================
+//	仲間の情報呼び出し処理
+//=============================================================================
+void SetFriendsResult(ResultFriendsInfo* pResultFriendsInfo)
+{
+	PFRIENDS pFriends = &g_afriends[0];
+	PFRIENDSINFO pFriendsInfo = &g_afriendsInfo[g_afriendstype[g_nNumFriends]];
+
+	for (int nCntFriends = 0; nCntFriends < MAX_FRIENDS; nCntFriends++, pFriends++)
+	{
+		if (pFriends->bUse == true)
+		{
+			continue;
+		}
+
+		// 各変数を設定
+		pFriends->pos = pResultFriendsInfo->pos;
+		pFriends->rot = pResultFriendsInfo->rot * D3DX_PI;
+		pFriends->type = g_afriendstype[g_nNumFriends];
+		pFriends->nIdxShadow = SetShadow();
+		pFriends->bUse = true;
+
+		// 種別で半径を設定
+		switch (g_afriendstype[g_nNumFriends])
+		{
+		case FRIENDSTYPE_000:
+			pFriends->fRadius = PENGUIN_RADIUS;
+			break;
+
+		case FRIENDSTYPE_001:
+			pFriends->fRadius = SNOWMAN_RADIUS;
+			break;
+		}
+
+		// モーション, パーツ分設定
+		pFriends->nNumMotion = pFriendsInfo->nNumMotion;
+		pFriends->nNumOffSetModel = pFriendsInfo->nNumOffSetModel;
+
+		for (int nCntMotion = 0; nCntMotion < pFriendsInfo->nNumMotion; nCntMotion++)
+		{
+			pFriends->aMotionInfo[nCntMotion] = pFriendsInfo->aMotionInfo[nCntMotion];
+		}
+
+		for (int nCntOffSetModel = 0; nCntOffSetModel < pFriendsInfo->nNumOffSetModel; nCntOffSetModel++)
+		{
+			pFriends->aOffSetModel[nCntOffSetModel] = pFriendsInfo->aOffSetModel[nCntOffSetModel];
+		}
+
+		g_nNumFriends++;
+		SetMotionFriends(MOTIONTYPE_NEUTRAL, true, false, 0, pFriends);
+		break;
+	}
+
+}

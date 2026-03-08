@@ -1,0 +1,80 @@
+#==============================================================================
+#
+# 3Dアクションゲームオブジェクトファイル [gameobject.txt]
+# Author : SHUMA AIZU
+#
+#==============================================================================
+
+SCRIPT
+
+#------------------------------------------------------------------------------
+#	仲間の情報
+#------------------------------------------------------------------------------
+
+MOTIONSCRIPT = data/SCRIPTS/penguin_motion000.txt 1
+MOTIONSCRIPT = data/SCRIPTS/penguin_motion001.txt 1
+MOTIONSCRIPT = data/SCRIPTS/snowman_motion.txt 1
+
+FRIENDSET
+	POS = 950.0 -5.0 -315.0
+	ROT = 0.0 0.75 0.0
+	TYPE = 0
+	EVENT = 0
+END_FRIENDSET
+
+FRIENDSET
+	POS = 575.0 89.0 615.0
+	ROT = 0.0 0.0 0.0
+	TYPE = 0
+	EVENT = 4
+END_FRIENDSET
+
+FRIENDSET
+	POS = -690.0 -32.5 955.0
+	ROT = 0.0 0.9 0.0
+	TYPE = 1
+	EVENT = 2
+END_FRIENDSET
+
+FRIENDSET
+	POS = 0.0 5.5 150.0
+	ROT = 0.0 0.0 0.0
+	TYPE = 1
+	EVENT = 3
+END_FRIENDSET
+
+FRIENDSET
+	POS = 0.0 5.5 150.0
+	ROT = 0.0 1.0 0.0
+	TYPE = 1
+	EVENT = 3
+END_FRIENDSET
+
+FRIENDSET
+	POS = 0.0 0.0 500.0
+	ROT = 0.0 0.0 0.0
+	TYPE = 0
+	EVENT = 0
+END_FRIENDSET
+
+FRIENDSET
+	POS = -350.0 25.0 -500.0
+	ROT = 0.0 -0.5 0.0
+	TYPE = 2
+	EVENT = 1
+END_FRIENDSET
+
+#------------------------------------------------------------------------------
+#	アイテムの情報
+#------------------------------------------------------------------------------
+
+ITEM_FILENAME = data/MODEL/snowflake000.x
+
+ITEMSET
+	POS = -1005.0 50.0 1750.0	# 位置
+	ROT = 0.0 -0.40 0.0			# 向き
+	TYPE = 0
+	COLLISION = 1				# 当たり判定有無
+END_ITEMSET
+
+END_SCRIPT

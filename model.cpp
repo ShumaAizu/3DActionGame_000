@@ -8,6 +8,7 @@
 #include "main.h"
 #include "model.h"
 #include "input.h"
+#include "meshfield.h"
 
 #include "debugproc.h"
 
@@ -27,13 +28,6 @@ int g_nNumModel;						// 現在のモデル数
 int g_nSelectType;						// 選択中の種類
 float g_fModelMove;						// モデルの移動量
 
-const char* g_pModelFileName[MODELTYPE_MAX] =
-{
-	"data\\MODEL\\Iceberg000.x",
-	"data\\MODEL\\snow001.x",
-	"data\\MODEL\\field001.x",
-};
-
 //=============================================================================
 //	モデルの初期化処理
 //=============================================================================
@@ -48,6 +42,7 @@ void InitModel(void)
 		g_amodel[nCntModel].rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 		g_amodel[nCntModel].bCollision = true;
 		g_amodel[nCntModel].bUse = false;
+		g_amodel[nCntModel].mode = MODE_NONE;
 	}
 
 	g_nNumModel = -1;
@@ -55,24 +50,6 @@ void InitModel(void)
 	g_nSelectModel = -1;
 	g_nSelectType = 0;
 	g_fModelMove = 1.0f;
-
-	SetModel(D3DXVECTOR3(-2350.0f, -205.0f, 1850.0f), D3DXVECTOR3(0.0f, 1.18f, 0.0f), D3DXVECTOR3(3.25f, 3.25f, 3.25f), MODELTYPE_000);
-	//SetModel(D3DXVECTOR3(-120.0f, -120.0f, 3380.0f), D3DXVECTOR3(0.0f, -1.83f, 0.0f), D3DXVECTOR3(5.0f, 5.0f, 5.0f), MODELTYPE_000);
-	//SetModel(D3DXVECTOR3(2200.0f, -240.0f, 1850.0f), D3DXVECTOR3(0.0f, 0.52f, 0.0f), D3DXVECTOR3(1.5f, 1.5f, 1.5f), MODELTYPE_000);
-	//SetModel(D3DXVECTOR3(-1025.0f, 200.0f, -1250.0f), D3DXVECTOR3(0.0f, 3.08f, 0.0f), D3DXVECTOR3(0.30f, 0.30f, 0.30f), MODELTYPE_002);
-	//SetModel(D3DXVECTOR3(-875.0f, 375.0f, 825.0f), D3DXVECTOR3(0.0f, -1.08f, 0.0f), D3DXVECTOR3(0.60f, 0.60f, 0.60f), MODELTYPE_002);
-	//SetModel(D3DXVECTOR3(775.0f, 0.0f, -1275.0f), D3DXVECTOR3(0.0f, 2.10f, 0.0f), D3DXVECTOR3(0.1f, 0.1f, 0.1f), MODELTYPE_002);
-	//SetModel(D3DXVECTOR3(1050.0f, 200.0f, 75.0f), D3DXVECTOR3(0.0f, 1.40f, 0.0f), D3DXVECTOR3(0.3f, 0.3f, 0.3f), MODELTYPE_002);
-	SetModel(D3DXVECTOR3(-870.0f, 0.0f, -1215.0f), D3DXVECTOR3(0.0f, -1.30f, 0.0f), D3DXVECTOR3(7.70f, 7.70f, 7.70f), MODELTYPE_001);
-	SetModel(D3DXVECTOR3(1290.0f, 0.0f, -165.0f), D3DXVECTOR3(0.0f, -0.50f, 0.0f), D3DXVECTOR3(6.5f, 6.5f, 6.5f), MODELTYPE_001);
-	SetModel(D3DXVECTOR3(-960.0f, 0.0f, 930.0f), D3DXVECTOR3(0.0f, 0.40f, 0.0f), D3DXVECTOR3(8.4f, 8.4f, 8.4f), MODELTYPE_001);
-	SetModel(D3DXVECTOR3(645.0f, 0.0f, -1680.0f), D3DXVECTOR3(0.0f, -1.30f, 0.0f), D3DXVECTOR3(2.3f, 2.3f, 2.3f), MODELTYPE_001);
-	SetModel(D3DXVECTOR3(840.0f, 0.0f, 1380.0f), D3DXVECTOR3(0.0f, 0.10f, 0.0f), D3DXVECTOR3(4.2f, 4.2f, 4.2f), MODELTYPE_001);
-
-	//SetModel(D3DXVECTOR3(400.0f, 0.0f, 450.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(1.0f, 1.0f, 1.0f), MODELTYPE_001);
-	//SetModel(D3DXVECTOR3(0.0f, 75.0f, 100.0f), D3DXVECTOR3(0.0f, 0.75f, 0.0f), D3DXVECTOR3(1.0f, 1.0f, 1.0f), MODELTYPE_002);
-	SetModel(D3DXVECTOR3(0.0f, 0.0f, -1000.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(1.0f, 1.0f, 1.0f), MODELTYPE_001);
-
 }
 
 //=============================================================================
@@ -104,6 +81,22 @@ void UninitModel(void)
 		{
 			g_amodeldata[nCntModeldata].pBuffMat->Release();
 			g_amodeldata[nCntModeldata].pBuffMat = NULL;
+		}
+	}
+}
+
+//=============================================================================
+//	モデルの終了処理 (モードごとに)
+//=============================================================================
+void UninitModeModel(MODE mode)
+{
+	PMODEL pModel = &g_amodel[0];
+
+	for (int nCntModel = 0; nCntModel < MAX_MODEL; nCntModel++, pModel++)
+	{
+		if (pModel->mode == mode)
+		{
+			pModel->bUse = false;
 		}
 	}
 }
@@ -172,6 +165,7 @@ void DrawModel(void)
 //=============================================================================
 void UpdateModel(void)
 {
+#ifdef _DEBUG
 	if (GetKeyboardTrigger(DIK_F2) == true)
 	{
 		g_nSelectModel = (g_nSelectModel + 1) % (g_nNumModel + 1);
@@ -192,9 +186,9 @@ void UpdateModel(void)
 		g_fModelMove += 1.0f;
 	}
 
-	if (GetKeyboardTrigger(DIK_RETURN) == true)
+	if (GetKeyboardTrigger(DIK_TAB) == true)
 	{
-		//SetModel(INIT_D3DXVEC3, INIT_D3DXVEC3, D3DXVECTOR3(1.0f, 1.0f, 1.0f), (MODELTYPE)g_nSelectType);
+		SetModel(INIT_D3DXVEC3, INIT_D3DXVEC3, D3DXVECTOR3(1.0f, 1.0f, 1.0f), (MODELTYPE)g_nSelectType, MODE_MAX, false, NULL, MESHFIELDTYPE_MODEL);
 	}
 
 	if (GetKeyboardPress(DIK_T) == true)
@@ -260,6 +254,23 @@ void UpdateModel(void)
 	PrintDebugProc("ModelPos = { %.2f %.2f %.2f }\n", g_amodel[g_nSelectModel].pos.x, g_amodel[g_nSelectModel].pos.y, g_amodel[g_nSelectModel].pos.z);
 	PrintDebugProc("ModelRot = { %.2f %.2f %.2f }\n", g_amodel[g_nSelectModel].rot.x, g_amodel[g_nSelectModel].rot.y, g_amodel[g_nSelectModel].rot.z);
 	PrintDebugProc("ModelScale = { %.2f %.2f %.2f }\n", g_amodel[g_nSelectModel].scale.x, g_amodel[g_nSelectModel].scale.y, g_amodel[g_nSelectModel].scale.z);
+#endif
+}
+
+//=============================================================================
+//	モデルの再利用処理
+//=============================================================================
+void ReuseModel(MODE mode)
+{
+	PMODEL pModel = &g_amodel[0];
+
+	for (int nCntModel = 0; nCntModel < MAX_MODEL; nCntModel++, pModel++)
+	{
+		if (pModel->mode == mode && pModel->bUse == false)
+		{
+			pModel->bUse = true;
+		}
+	}
 }
 
 //=============================================================================
@@ -270,7 +281,7 @@ void CollisionModel(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTOR3 * pMove
 	Model* pModel = &g_amodel[0];					// 先頭アドレス
 	D3DXMATRIX mtxRot, mtxTrans, mtxScale;			// 計算用マトリックス
 	D3DXVECTOR3 posMax, posMin;						// 
-	D3DXVECTOR3 posA, posB, posC, posD;
+	D3DXVECTOR3 posA, posB, posC, posD, posE, posF, posG, posH;
 
 	for (int nCntModel = 0; nCntModel < MAX_MODEL; nCntModel++, pModel++)
 	{
@@ -285,6 +296,9 @@ void CollisionModel(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTOR3 * pMove
 		posB = D3DXVECTOR3(pModelData->vtxMax.x, 0.0f, pModelData->vtxMax.z);
 		posC = D3DXVECTOR3(pModelData->vtxMax.x, 0.0f, pModelData->vtxMin.z);
 		posD = D3DXVECTOR3(pModelData->vtxMin.x, 0.0f, pModelData->vtxMin.z);
+
+		posE = D3DXVECTOR3(pModelData->vtxMin.x, pModelData->vtxMin.y, 0.0f);
+		posF = D3DXVECTOR3(pModelData->vtxMax.x, pModelData->vtxMax.y, 0.0f);
 
 		// ワールドマトリックスの初期化
 		D3DXMatrixIdentity(&pModel->mtxWorld);
@@ -305,14 +319,22 @@ void CollisionModel(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTOR3 * pMove
 		D3DXVec3TransformCoord(&posB, &posB, &pModel->mtxWorld);
 		D3DXVec3TransformCoord(&posC, &posC, &pModel->mtxWorld);
 		D3DXVec3TransformCoord(&posD, &posD, &pModel->mtxWorld);
+		D3DXVec3TransformCoord(&posE, &posE, &pModel->mtxWorld);
+		D3DXVec3TransformCoord(&posF, &posF, &pModel->mtxWorld);
 
-		// 当たり判定
-		if (pModel->bCollision == true)
+		if (pPos->y + vtxMax.y > g_amodel[nCntModel].pos.y + g_amodeldata[g_amodel[nCntModel].modeltype].vtxMin.y && pPos->y + vtxMin.y < g_amodel[nCntModel].pos.y + g_amodeldata[g_amodel[nCntModel].modeltype].vtxMax.y)
 		{
-			CrossCollision(pPos, pPosOld, posB, posA, true, false);
-			CrossCollision(pPos, pPosOld, posC, posB, true, false);
-			CrossCollision(pPos, pPosOld, posD, posC, true, false);
-			CrossCollision(pPos, pPosOld, posA, posD, true, false);
+
+			// 当たり判定
+			if (pModel->bCollision == true)
+			{
+				CrossCollision(pPos, pPosOld, posB, posA, true, false);
+				CrossCollision(pPos, pPosOld, posC, posB, true, false);
+				CrossCollision(pPos, pPosOld, posD, posC, true, false);
+				CrossCollision(pPos, pPosOld, posA, posD, true, false);
+				CrossCollision(pPos, pPosOld, posE, posF, true, false);
+			}
+
 		}
 
 		// モデルの範囲内か判定
@@ -332,17 +354,17 @@ void CollisionModel(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTOR3 * pMove
 			//	pPos->x = g_amodel[nCntModel].pos.x + g_amodeldata[g_amodel[nCntModel].modeltype].vtxMax.x - vtxMin.x;
 			//}
 
-			// 上から
-			if (pPosOld->y + vtxMin.y >= g_amodel[nCntModel].pos.y + g_amodeldata[g_amodel[nCntModel].modeltype].vtxMax.y)
-			{
-				pPos->y = g_amodel[nCntModel].pos.y + g_amodeldata[g_amodel[nCntModel].modeltype].vtxMax.y - vtxMin.y;
-			}
+			//// 上から
+			//if (pPosOld->y + vtxMin.y >= g_amodel[nCntModel].pos.y + g_amodeldata[g_amodel[nCntModel].modeltype].vtxMax.y)
+			//{
+			//	pPos->y = g_amodel[nCntModel].pos.y + g_amodeldata[g_amodel[nCntModel].modeltype].vtxMax.y - vtxMin.y;
+			//}
 
-			// 下から
-			if (pPosOld->y + vtxMax.y <= g_amodel[nCntModel].pos.y + g_amodeldata[g_amodel[nCntModel].modeltype].vtxMin.y)
-			{
-				pPos->y = g_amodel[nCntModel].pos.y + g_amodeldata[g_amodel[nCntModel].modeltype].vtxMin.y - vtxMax.y;
-			}
+			//// 下から
+			//if (pPosOld->y + vtxMax.y <= g_amodel[nCntModel].pos.y + g_amodeldata[g_amodel[nCntModel].modeltype].vtxMin.y)
+			//{
+			//	pPos->y = g_amodel[nCntModel].pos.y + g_amodeldata[g_amodel[nCntModel].modeltype].vtxMin.y - vtxMax.y;
+			//}
 
 			//// 手前から
 			//if (pPosOld->z + vtxMax.z <= g_amodel[nCntModel].pos.z + g_amodeldata[g_amodel[nCntModel].modeltype].vtxMin.z)
@@ -362,22 +384,40 @@ void CollisionModel(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTOR3 * pMove
 //=============================================================================
 //	モデルの設定処理
 //=============================================================================
-void SetModel(D3DXVECTOR3 pos, D3DXVECTOR3 rot, D3DXVECTOR3 scale, MODELTYPE modeltype)
+void SetModel(D3DXVECTOR3 pos, D3DXVECTOR3 rot, D3DXVECTOR3 scale, MODELTYPE modeltype, MODE mode, bool bCollision,  const char* pMeshFile, MESHFIELDTYPE meshtype)
 {
-	for (int nCntModel = 0; nCntModel < MAX_MODEL; nCntModel++)
+	PMODEL pModel = &g_amodel[0];
+
+	for (int nCntModel = 0; nCntModel < MAX_MODEL; nCntModel++, pModel++)
 	{
-		if (g_amodel[nCntModel].bUse == true)
+		if (pModel->bUse == true)
 		{
 			continue;
 		}
 
+		MeshInfo MeshInfo = {};
+
 		g_nNumModel++;
 		g_nSelectModel++;
 
-		g_amodel[nCntModel].pos = pos;
-		g_amodel[nCntModel].rot = rot;
-		g_amodel[nCntModel].scale = scale;
-		g_amodel[nCntModel].modeltype = modeltype;
+		// 各種引数を代入
+		pModel->pos = pos;					// 位置
+		pModel->rot = rot;					// 向き
+		pModel->scale = scale;				// 大きさ
+		pModel->modeltype = modeltype;		// 種類
+		pModel->mode = mode;				// どのモードで使っているか
+		pModel->bCollision = bCollision;	// 当たり判定するか
+
+		MeshInfo.pos = pos;
+		MeshInfo.rot = rot;
+
+		if (pMeshFile != NULL)
+		{
+			LoadMesh(pMeshFile, &MeshInfo);
+
+			SetMesh(pos, rot, MeshInfo.nVtx, &MeshInfo.VtxPos[0], MeshInfo.nSplitWidth, MeshInfo.nSplitDepth, meshtype, &g_amodel[nCntModel].mtxWorld);
+		}
+
 		g_amodel[nCntModel].bUse = true;
 		break;
 	}
@@ -563,13 +603,6 @@ void CollisionMeshModelTest(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld)
 				(vecLineB.z * vecToPosB.x) - (vecLineB.x * vecToPosB.z) > 0 &&
 				(vecLineC.z * vecToPosC.x) - (vecLineC.x * vecToPosC.z) > 0)
 			{// もし全ての境界線ベクトルの内側にいたら
-				//pVtx[nCntVtxWidht].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
-				//pVtx[nCntVtxWidht + pMeshField->nSplitWidth].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
-				//pVtx[nCntVtxWidht + pMeshField->nSplitWidth + 1].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
-
-				//SetEffect(PosA, INIT_D3DXVEC3, D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f), 15.0f, 0.0f, 0.0f, 1);
-				//SetEffect(PosB, INIT_D3DXVEC3, D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f), 15.0f, 0.0f, 0.0f, 1);
-				//SetEffect(PosC, INIT_D3DXVEC3, D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f), 15.0f, 0.0f, 0.0f, 1);
 
 				PrintDebugProc("成功\n");
 
@@ -598,13 +631,6 @@ void CollisionMeshModelTest(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld)
 				(vecLineB.z * vecToPosB.x) - (vecLineB.x * vecToPosB.z) < 0 &&
 				(vecLineC.z * vecToPosC.x) - (vecLineC.x * vecToPosC.z) < 0)
 			{// もし全ての境界線ベクトルの内側にいたら
-				//pVtx[nCntVtxWidht].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
-				//pVtx[nCntVtxWidht + pMeshField->nSplitWidth].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
-				//pVtx[nCntVtxWidht + pMeshField->nSplitWidth + 1].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
-
-				//SetEffect(PosA, INIT_D3DXVEC3, D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f), 15.0f, 0.0f, 0.0f, 1);
-				//SetEffect(PosB, INIT_D3DXVEC3, D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f), 15.0f, 0.0f, 0.0f, 1);
-				//SetEffect(PosC, INIT_D3DXVEC3, D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f), 15.0f, 0.0f, 0.0f, 1);
 
 				PrintDebugProc("成功\n");
 

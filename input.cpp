@@ -165,40 +165,77 @@ void UpdateJoypad(void)
 		g_joykeyStateRepeat.Gamepad.wButtons = (g_joykeyState.Gamepad.wButtons & joykeyState.Gamepad.wButtons);
 		g_joykeyState = joykeyState;		// ジョイパッドのプレス情報を保存
 
+		// スティックの状態
 		if (joykeyState.Gamepad.sThumbLY > XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE)
 		{
-			g_bJoyStick[JOYSTICK_UP] = true;
+			g_bJoyStick[JOYSTICKL_UP] = true;
 		}
 		else
 		{
-			g_bJoyStick[JOYSTICK_UP] = false;
+			g_bJoyStick[JOYSTICKL_UP] = false;
 		}
 
 		if (joykeyState.Gamepad.sThumbLY < -XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE)
 		{
-			g_bJoyStick[JOYSTICK_DOWN] = true;
+			g_bJoyStick[JOYSTICKL_DOWN] = true;
 		}
 		else
 		{
-			g_bJoyStick[JOYSTICK_DOWN] = false;
+			g_bJoyStick[JOYSTICKL_DOWN] = false;
 		}
 
 		if (joykeyState.Gamepad.sThumbLX < -XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE)
 		{
-			g_bJoyStick[JOYSTICK_LEFT] = true;
+			g_bJoyStick[JOYSTICKL_LEFT] = true;
 		}
 		else
 		{
-			g_bJoyStick[JOYSTICK_LEFT] = false;
+			g_bJoyStick[JOYSTICKL_LEFT] = false;
 		}
 
 		if (joykeyState.Gamepad.sThumbLX > XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE)
 		{
-			g_bJoyStick[JOYSTICK_RIGHT] = true;
+			g_bJoyStick[JOYSTICKL_RIGHT] = true;
 		}
 		else
 		{
-			g_bJoyStick[JOYSTICK_RIGHT] = false;
+			g_bJoyStick[JOYSTICKL_RIGHT] = false;
+		}
+
+		if (joykeyState.Gamepad.sThumbRY > XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE)
+		{
+			g_bJoyStick[JOYSTICKR_UP] = true;
+		}
+		else
+		{
+			g_bJoyStick[JOYSTICKR_UP] = false;
+		}
+
+		if (joykeyState.Gamepad.sThumbRY < -XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE)
+		{
+			g_bJoyStick[JOYSTICKR_DOWN] = true;
+		}
+		else
+		{
+			g_bJoyStick[JOYSTICKR_DOWN] = false;
+		}
+
+		if (joykeyState.Gamepad.sThumbRX < -XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE)
+		{
+			g_bJoyStick[JOYSTICKR_LEFT] = true;
+		}
+		else
+		{
+			g_bJoyStick[JOYSTICKR_LEFT] = false;
+		}
+
+		if (joykeyState.Gamepad.sThumbRX > XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE)
+		{
+			g_bJoyStick[JOYSTICKR_RIGHT] = true;
+		}
+		else
+		{
+			g_bJoyStick[JOYSTICKR_RIGHT] = false;
 		}
 	}
 
@@ -213,6 +250,7 @@ void UpdateJoypad(void)
 		}
 	}
 
+	// 振動修了処理
 	if (g_joypadVibration.wLeftMotorSpeed != NULL || g_joypadVibration.wRightMotorSpeed != NULL)
 	{
 		g_nVibCounter--;
@@ -461,9 +499,63 @@ bool GetJoypadAny(void)
 }
 
 //=============================================================================
+//	ジョイパッドの左スティック取得処理
+//=============================================================================
+bool GetJoypadStickLeft(float* pValueH, float* pValueV)
+{
+	float fValueH, fValueV;
+
+	fValueH = g_joykeyState.Gamepad.sThumbLX;
+	fValueV = g_joykeyState.Gamepad.sThumbLY;
+
+	if (SQRTF(fValueH, fValueV) * 0.5f > CUSTOM_DEADZONE)
+	{// デッドゾーン外なら
+		// 正規化
+		fValueH = (fValueH) / (JOYSTICKVALUE_MAX - CUSTOM_DEADZONE);
+		fValueV = (fValueV) / (JOYSTICKVALUE_MAX - CUSTOM_DEADZONE);
+
+		// 値を渡す
+		*pValueH = fValueH;
+		*pValueV = fValueV;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+//=============================================================================
+//	ジョイパッドの右スティック取得処理
+//=============================================================================
+bool GetJoypadStickRight(float* pValueH, float* pValueV)
+{
+	float fValueH, fValueV;
+
+	fValueH = g_joykeyState.Gamepad.sThumbRX;
+	fValueV = g_joykeyState.Gamepad.sThumbRY;
+
+	if (SQRTF(fValueH, fValueV) * 0.5f > CUSTOM_DEADZONE)
+	{// デッドゾーン外なら
+		// 正規化
+		fValueH = (fValueH) / (JOYSTICKVALUE_MAX - CUSTOM_DEADZONE);
+		fValueV = (fValueV) / (JOYSTICKVALUE_MAX - CUSTOM_DEADZONE);
+
+		// 値を渡す
+		*pValueH = fValueH;
+		*pValueV = fValueV;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+//=============================================================================
 //	ジョイパッドの振動設定
 //=============================================================================
-void SetJoypadVibration(int nLVibration, int nRVibration, int nVibCounter)
+void SetJoypadVibration(WORD nLVibration, WORD nRVibration, int nVibCounter)
 {
 	g_joypadVibration.wLeftMotorSpeed = nLVibration;
 	g_joypadVibration.wRightMotorSpeed = nRVibration;

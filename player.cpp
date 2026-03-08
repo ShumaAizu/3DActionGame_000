@@ -6,6 +6,8 @@
 //=============================================================================
 
 #include "main.h"
+#include "fade.h"
+#include "sound.h"
 #include "player.h"
 #include "bullet.h"
 #include "effect.h"
@@ -17,6 +19,9 @@
 #include "meshwall.h"
 #include "meshfield.h"
 #include "friends.h"
+#include "item.h"
+
+#include "result.h"
 
 #include "snow.h"
 
@@ -25,33 +30,71 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define MAX_PLAYERTEX		(16)		// 読み込むテクスチャの最大数
-#define GRAVITY				(-0.25f)	// 重力
-#define PLAYER_JUMP			(5.0f)		// ジャンプ力
+#define MAX_PLAYERTEX				(16)										// 読み込むテクスチャの最大数
+#define GRAVITY						(-0.25f)									// 重力
+#define PLAYER_JUMP					(5.0f)										// ジャンプ力
+#define PLAYER_INIT_POS				(D3DXVECTOR3(0.0f, 8.2f, -750.0f))			// プレイヤーの初期位置
+#define PLAYER_INIT_ROT				(D3DXVECTOR3(0.0f, 0.0f, 0.0f))				// プレイヤーの初期向き
+
+#define PLAYER_INIT_POSTITLE		(D3DXVECTOR3(-1745.0f, 725.0f, -3925.0f))	// プレイヤーの初期位置 (タイトル)
+#define PLAYER_INIT_ROTTITLE		(D3DXVECTOR3(0.0f, -0.75f * D3DX_PI, 0.0f))	// プレイヤーの初期向き (タイトル)
+
+#define PLAYER_INIT_POSRESULT		(D3DXVECTOR3(0.0f, -6.25f, 0.0f))			// プレイヤーの初期位置 (リザルト)
+#define PLAYER_INIT_ROTRESULT		(D3DXVECTOR3(0.0f, D3DX_PI, 0.0f))			// プレイヤーの初期位置 (リザルト)
+#define PLAYER_ROTDEST_RESULT		(0.0f)										// プレイヤーの目的向き (リザルト)
+#define PLAYER_MOVESETIMER			(30)										// 足音がなるまでのタイマー
 
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
 Player g_player;						// プレイヤーの情報
-D3DXVECTOR3 g_posLog[MAX_POSLOG] = {};	// 過去の位置の記録
+D3DXVECTOR3 g_posLog[MAX_LOG] = {};		// 過去の位置の記録
+bool g_bFallFlag = false;				// 落下フラグ
 
 //=============================================================================
 //	プレイヤーの初期化処理
 //=============================================================================
-void InitPlayer(void)
+void InitPlayer(MODE mode)
 {
 	// デバイスの取得
 	LPDIRECT3DDEVICE9 pDevice = GetDevice();
 
+	// 初期化
 	memset(&g_player, NULL, sizeof(Player));
 
-	// 初期化
-	g_player.pos = D3DXVECTOR3(0.0f, 1.0f, -1500.0f);
-	g_player.posOld = D3DXVECTOR3(0.0f, 0.0f, -1500.0f);
-	g_player.fRadius = PLAYER_RADIUS;
-	g_player.fSpeed = PLAYER_SPEED;
-	g_player.nIdxShadow = -1;
-	g_player.nIdxPosLog = 0;
+	g_bFallFlag = false;
+
+	// 各種モードに合わせて
+	switch (mode)
+	{
+	case MODE_GAME:
+		g_player.pos = PLAYER_INIT_POS;
+		g_player.rot = PLAYER_INIT_ROT;
+		g_player.move = INIT_D3DXVEC3;
+		g_player.fRadius = PLAYER_RADIUS;
+		g_player.fSpeed = PLAYER_SPEED;
+		g_player.nIdxShadow = -1;
+		g_player.nIdxPosLog = 0;
+		break;
+
+	case MODE_TITLE:
+		g_player.pos = PLAYER_INIT_POSTITLE;
+		g_player.rot = PLAYER_INIT_ROTTITLE;
+		g_player.fRadius = PLAYER_RADIUS;
+		g_player.fSpeed = PLAYER_SPEED;
+		g_player.nIdxShadow = -1;
+		g_player.nIdxPosLog = 0;
+		break;
+
+	case MODE_RESULT:
+		g_player.pos = PLAYER_INIT_POSRESULT;
+		g_player.rot = PLAYER_INIT_ROTRESULT;
+		g_player.fRadius = PLAYER_RADIUS;
+		g_player.fSpeed = PLAYER_SPEED;
+		g_player.nIdxShadow = -1;
+		g_player.nIdxPosLog = 0;
+		break;
+	}
 
 	// 影の設定
 	g_player.nIdxShadow = SetShadow();
@@ -90,19 +133,111 @@ void DrawPlayer(void)
 	D3DMATERIAL9 matDef;						// 現在のマテリアル保存用
 	D3DXMATERIAL* pMat;							// マテリアルデータへのポインタ
 
-	// ワールドマトリックスの初期化
-	D3DXMatrixIdentity(&g_player.mtxWorld);
+	D3DXMATRIX mtxShadow;		// シャドウマトリックス
+	D3DLIGHT9 light;			// ライトの情報
+	D3DXVECTOR4 posLight;		// ライトの位置
+	D3DXVECTOR3 pos, normal;	// 平面の点, 法線ベクトル
+	D3DXPLANE plane;			// 平面の情報
 
-	// 向きを反映
-	D3DXMatrixRotationYawPitchRoll(&mtxRot, g_player.rot.y, g_player.rot.x, g_player.rot.z);
-	D3DXMatrixMultiply(&g_player.mtxWorld, &g_player.mtxWorld, &mtxRot);
+	D3DXMATERIAL mat;
 
-	// 位置を反映
-	D3DXMatrixTranslation(&mtxTrans, g_player.pos.x, g_player.pos.y, g_player.pos.z);
-	D3DXMatrixMultiply(&g_player.mtxWorld, &g_player.mtxWorld, &mtxTrans);
+	// ライトの位置を設定
+	pDevice->GetLight(1, &light);
+	posLight = D3DXVECTOR4(-light.Direction.x, -light.Direction.y, -light.Direction.z, 1.0f);
 
-	// ワールドマトリックスの設定
-	pDevice->SetTransform(D3DTS_WORLD, &g_player.mtxWorld);
+	// 平面情報を生成
+	pos = D3DXVECTOR3(0.0f, 100.0f, 0.0f);
+	normal = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
+	D3DXPlaneFromPointNormal(&plane, &pos, &normal);
+
+	// 現在のマテリアルを取得
+	pDevice->GetMaterial(&matDef);
+
+	// 全モデル(パーツ)の描画
+	for (int nCntOffSetModel = 0; nCntOffSetModel < g_player.nNumOffSetModel; nCntOffSetModel++)
+	{
+		D3DXMATRIX mtxRotOffSetModel, mtxTransOffSetModel;	// 計算用マトリックス
+		D3DXMATRIX mtxParent;								// 親のマトリックス
+
+		// ワールドマトリックスの初期化(デフォルトの値にする)
+		D3DXMatrixIdentity(&g_player.mtxWorld);
+
+		// 向きを反映
+		D3DXMatrixRotationYawPitchRoll(&mtxRot, g_player.rot.y, g_player.rot.x, g_player.rot.z);
+		D3DXMatrixMultiply(&g_player.mtxWorld, &g_player.mtxWorld, &mtxRot);
+
+		// 位置を反映
+		D3DXMatrixTranslation(&mtxTrans, g_player.pos.x, g_player.pos.y, g_player.pos.z);
+		D3DXMatrixMultiply(&g_player.mtxWorld, &g_player.mtxWorld, &mtxTrans);
+
+		// ワールドマトリックスの初期化(デフォルトの値にする)
+		D3DXMatrixIdentity(&mtxShadow);
+
+		// シャドウマトリックスの生成
+		D3DXMatrixShadow(&mtxShadow, &posLight, &plane);
+		D3DXMatrixMultiply(&mtxShadow, &g_player.mtxWorld, &mtxShadow);
+
+		// ワールドマトリックスの初期化
+		D3DXMatrixIdentity(&g_player.mtxWorld);
+
+		// 向きを反映
+		D3DXMatrixRotationYawPitchRoll(&mtxRot, g_player.rot.y, g_player.rot.x, g_player.rot.z);
+		D3DXMatrixMultiply(&g_player.mtxWorld, &g_player.mtxWorld, &mtxRot);
+
+		// 位置を反映
+		D3DXMatrixTranslation(&mtxTrans, g_player.pos.x, g_player.pos.y, g_player.pos.z);
+		D3DXMatrixMultiply(&g_player.mtxWorld, &g_player.mtxWorld, &mtxTrans);
+
+		// ワールドマトリックスの設定
+		pDevice->SetTransform(D3DTS_WORLD, &g_player.mtxWorld);
+
+		// パーツのワールドマトリックスを初期化
+		D3DXMatrixIdentity(&g_player.aOffSetModel[nCntOffSetModel].mtxWorld);
+
+		// パーツの向きを反映
+		D3DXMatrixRotationYawPitchRoll(&mtxRotOffSetModel, g_player.aOffSetModel[nCntOffSetModel].rot.y, g_player.aOffSetModel[nCntOffSetModel].rot.x, g_player.aOffSetModel[nCntOffSetModel].rot.z);
+		D3DXMatrixMultiply(&g_player.aOffSetModel[nCntOffSetModel].mtxWorld, &g_player.aOffSetModel[nCntOffSetModel].mtxWorld, &mtxRotOffSetModel);
+
+		// パーツの位置を反映(オフセット)
+		D3DXMatrixTranslation(&mtxTransOffSetModel, g_player.aOffSetModel[nCntOffSetModel].pos.x, g_player.aOffSetModel[nCntOffSetModel].pos.y, g_player.aOffSetModel[nCntOffSetModel].pos.z);
+		D3DXMatrixMultiply(&g_player.aOffSetModel[nCntOffSetModel].mtxWorld, &g_player.aOffSetModel[nCntOffSetModel].mtxWorld, &mtxTransOffSetModel);
+
+		// パーツの「親のマトリックス」を設定
+		if (g_player.aOffSetModel[nCntOffSetModel].nIdxModelParent != -1)
+		{// 親モデルがある場合
+			mtxParent = g_player.aOffSetModel[g_player.aOffSetModel[nCntOffSetModel].nIdxModelParent].mtxWorld;
+		}
+		else
+		{// 親モデルがない場合
+			mtxParent = g_player.mtxWorld;
+		}
+
+		// 算出した「パーツのワールドマトリックス」と「親のマトリックス」を掛け合わせる
+		D3DXMatrixMultiply(&g_player.aOffSetModel[nCntOffSetModel].mtxWorld,
+			&g_player.aOffSetModel[nCntOffSetModel].mtxWorld,
+			&mtxParent);
+
+		// パーツのワールドマトリックスを設定
+		pDevice->SetTransform(D3DTS_WORLD, &g_player.aOffSetModel[nCntOffSetModel].mtxWorld);
+
+		// マテリアルデータへのポインタを取得
+		pMat = (D3DXMATERIAL*)g_player.aOffSetModel[nCntOffSetModel].pBuffMat->GetBufferPointer();
+
+		for (int nCntMat = 0; nCntMat < (int)g_player.aOffSetModel[nCntOffSetModel].dwNumMat; nCntMat++)
+		{
+			// マテリアルの設定
+			pDevice->SetMaterial(&pMat[nCntMat].MatD3D);
+
+			// テクスチャの設定
+			pDevice->SetTexture(0, g_player.aOffSetModel[nCntOffSetModel].apTexture[nCntMat]);
+
+			// プレイヤー(パーツ)の描画
+			g_player.aOffSetModel[nCntOffSetModel].pMesh->DrawSubset(nCntMat);
+		}
+	}
+
+	// 保存していたマテリアルを戻す
+	pDevice->SetMaterial(&matDef);
 
 	// 現在のマテリアルを取得
 	pDevice->GetMaterial(&matDef);
@@ -165,129 +300,262 @@ void DrawPlayer(void)
 //=============================================================================
 //	プレイヤーの更新処理
 //=============================================================================
-void UpdatePlayer(void)
+void UpdatePlayer(MODE mode)
 {
-	static int nFrameCounter = 0;
+	if (mode == MODE_TITLE || mode == MODE_RESULT)
+	{
+		UpdateMotion();
+
+		switch (mode)
+		{
+		case MODE_RESULT:
+			UpdateResultPlayer();
+			break;
+		}
+		return;
+	}
+
+	static int nFrameCounter = 0;	// フレームカウント変数
+	static int nMoveSECounter = PLAYER_MOVESETIMER - 1;
 
 	g_player.posOld = g_player.pos;		// 過去の位置更新
 
 	if (g_player.state == PLAYERSTATE_MOVE || g_player.state == PLAYERSTATE_JUMP)
 	{
-		if (g_player.nNumFriends > 0)
-		{
-			nFrameCounter++;
-		}
+		nFrameCounter++;
 
-		if (nFrameCounter == POSLOGCOUNT)
+		if (nFrameCounter > POSLOGCOUNT)
 		{
-			g_posLog[g_player.nIdxPosLog] = g_player.pos;
+			if (g_player.pRideField != NULL)
+			{
+				g_posLog[g_player.nIdxPosLog] = g_player.pos;
 
-			nFrameCounter = 0;
+				nFrameCounter = 0;
+			}
 		}
 	}
 
 	PrintDebugProc("Player.pos = { %.2f, %.2f, %.2f }\n", g_player.pos.x, g_player.pos.y, g_player.pos.z);
 	PrintDebugProc("Player.posOld = { %.2f, %.2f, %.2f }\n", g_player.posOld.x, g_player.posOld.y, g_player.posOld.z);
+	PrintDebugProc("向き %.2f\n", g_player.rot.y);
 
 	Camera* pCamera = GetCamera();
 
-	static float fRotMove = 0.0f, fRotDest = 0.0f, fRotDiff = 0.0f;
-
-	D3DXVECTOR3 KeyboardMove = {0.0f, 0.0f, 0.0f};
-
-	if (GetKeyboardPress(DIK_A) == true || GetJoypadPress(JOYKEY_LEFT) == true)
-	{//Aキーが押された
-		KeyboardMove.x += 1;
-	}
-
-	if (GetKeyboardPress(DIK_D) == true || GetJoypadPress(JOYKEY_RIGHT) == true)
-	{//Dキーが押された
-		KeyboardMove.x -= 1;
-	}
-
-	if (GetKeyboardPress(DIK_W) == true || GetJoypadPress(JOYKEY_UP) == true)
-	{//Wキーが押された
-		KeyboardMove.z -= 1;
-	}
-
-	if (GetKeyboardPress(DIK_S) == true || GetJoypadPress(JOYKEY_DOWN) == true)
-	{//Sキーが押された
-		KeyboardMove.z += 1;
-	}
-
-	g_player.fMoveKeyboard = SQRTF(KeyboardMove.x, KeyboardMove.z);
-
-	if (g_player.fMoveKeyboard != 0)
+	if (g_player.event != PLAYEREVENT_FRIENDS)
 	{
-		fRotMove = g_player.rot.y - D3DX_PI;									// 今の向き
-		fRotDest = atan2f(KeyboardMove.x, KeyboardMove.z) + pCamera->rot.y;		// 目的地への向き
+		static float fRotMove = 0.0f, fRotDest = 0.0f, fRotDiff = 0.0f;
 
-		if (g_player.state != PLAYERSTATE_MOVE && g_player.state != PLAYERSTATE_JUMP)
-		{
-			SetMotion(MOTIONTYPE_MOVE, true, true, 10);
-			g_player.state = PLAYERSTATE_MOVE;
+		D3DXVECTOR3 KeyboardMove = { 0.0f, 0.0f, 0.0f };
+
+		if (GetKeyboardPress(DIK_A) == true || GetJoypadPress(JOYKEY_LEFT) == true)
+		{// Aキーが押された
+			KeyboardMove.x += -1;
 		}
 
-		// 移動量の更新
-		g_player.move.x += sinf(fRotMove) * g_player.fSpeed;
-		g_player.move.z += cosf(fRotMove) * g_player.fSpeed;
-	}
-	else
-	{
-		if (g_player.state != PLAYERSTATE_NUETRAL && g_player.state != PLAYERSTATE_JUMP)
+		if (GetKeyboardPress(DIK_D) == true || GetJoypadPress(JOYKEY_RIGHT) == true)
+		{// Dキーが押された
+			KeyboardMove.x += 1;
+		}
+
+		if (GetKeyboardPress(DIK_W) == true || GetJoypadPress(JOYKEY_UP) == true)
+		{// Wキーが押された
+			KeyboardMove.z += 1;
+		}
+
+		if (GetKeyboardPress(DIK_S) == true || GetJoypadPress(JOYKEY_DOWN) == true)
+		{// Sキーが押された
+			KeyboardMove.z += -1;
+		}
+
+		// 移動ベクトルを正規化
+		D3DXVec3Normalize(&KeyboardMove, &KeyboardMove);
+
+		// スティックの値をもらう(使っていたら優先)
+		GetJoypadStickLeft(&KeyboardMove.x, &KeyboardMove.z);
+
+		g_player.fMoveKeyboard = SQRTF(KeyboardMove.x, KeyboardMove.z);
+
+		if (g_player.fMoveKeyboard != 0 && g_bFallFlag == false)
+		{// 移動していたら
+			fRotMove = g_player.rot.y;												// 今の向き
+			fRotDest = atan2f(KeyboardMove.x, KeyboardMove.z) + pCamera->rot.y;		// 目的地への向き
+
+			if (g_player.state != PLAYERSTATE_MOVE && g_player.state != PLAYERSTATE_JUMP)
+			{
+				SetMotion(MOTIONTYPE_MOVE, true, true, 10);
+				g_player.state = PLAYERSTATE_MOVE;
+			}
+
+			// 目的向きに移動方向を合わせる
+			KeyboardMove.x = sinf(fRotDest) * g_player.fMoveKeyboard;
+			KeyboardMove.z = cosf(fRotDest) * g_player.fMoveKeyboard;
+
+			// 移動量の更新
+			g_player.move.x += (g_player.fSpeed * -KeyboardMove.x);
+			g_player.move.z += (g_player.fSpeed * -KeyboardMove.z);
+		}
+		else
 		{
-			SetMotion(MOTIONTYPE_NEUTRAL, true, true, 10);
-			g_player.state = PLAYERSTATE_NUETRAL;
+			if (g_player.state == PLAYERSTATE_MOVE)
+			{
+				SetMotion(MOTIONTYPE_NEUTRAL, true, true, 10);
+				g_player.state = PLAYERSTATE_NUETRAL;
+			}
+		}
+
+		if (g_player.state == PLAYERSTATE_MOVE)
+		{
+			nMoveSECounter++;
+
+			if (nMoveSECounter % 5 == 0)
+			{
+				SetEffect(g_player.pos + D3DXVECTOR3((float)(rand() % 5 - 3), 0.0f, (float)(rand() % 5 - 3)), g_player.move * -1.0f, D3DXCOLOR(0.68f, 0.85f, 0.9f, 1.0f), (float)(rand() % 5 + 3), 0.0025f, 0.0025f, 5);
+			}
+			if (nMoveSECounter % PLAYER_MOVESETIMER == 0)
+			{
+				PlaySound(SOUND_LABEL_WALKSE000);
+				nMoveSECounter = 0;
+			}
+
+		}
+		else
+		{
+			nMoveSECounter = PLAYER_MOVESETIMER - 1;
+		}
+
+		// 補正
+		fRotMove = AngleNormalize(fRotMove);
+
+		fRotDest = AngleNormalize(fRotDest);
+
+		fRotDiff = fRotDest - fRotMove;		// 差分
+
+		fRotDiff = AngleNormalize(fRotDiff);
+
+		fRotMove += fRotDiff * 0.175f;
+
+		fRotDiff = AngleNormalize(fRotDiff);
+
+		g_player.rot.y = fRotMove;
+
+		g_player.rot.y = AngleNormalize(g_player.rot.y);
+
+		if ((GetKeyboardTrigger(DIK_SPACE) == true || GetJoypadTrigger(JOYKEY_A) == true) && g_player.bJump == false && g_bFallFlag == false)
+		{// スペースキーが押されたかつジャンプ状態じゃない
+			SetMotion(MOTIONTYPE_JUMP, true, false, 10);
+			SetJoypadVibration(6000, 8000, 18);
+			g_player.state = PLAYERSTATE_JUMP;
+			g_player.move.y = PLAYER_JUMP;
+			g_player.bJump = true;
+			PlaySound(SOUND_LABEL_JUMPSE000);
+		}
+
+		g_player.move.y += GRAVITY;			// 重力をかける
+		g_player.pos += g_player.move;		// 位置を更新
+
+		// 慣性を更新
+		g_player.move.x += (0.0f - g_player.move.x) * g_player.fInertia;
+		g_player.move.z += (0.0f - g_player.move.z) * g_player.fInertia;
+
+		// 壁との当たり判定
+		CollisionMeshWall(&g_player.pos, &g_player.posOld, &g_player.move);
+
+		// モデルとの当たり判定
+		CollisionModel(&g_player.pos, &g_player.posOld, &g_player.move, D3DXVECTOR3(10.0f, 10.0f, 10.0f), D3DXVECTOR3(10.0f, 10.0f, 10.0f));
+
+		if (g_bFallFlag != true)
+		{
+			// フィールドとの当たり判定
+			g_player.pRideField = CollisionMeshField(&g_player.pos, &g_player.posOld, &g_player.move);
+		}
+
+		if (g_player.pRideField != NULL)
+		{// もしフィールド上にいたら
+			//　慣性を設定
+			switch (g_player.pRideField->type)
+			{
+			case MESHFIELDTYPE_ICE:
+				g_player.fInertia = ICE_INERTIA;
+				break;
+
+			case MESHFIELDTYPE_SNOW:
+				g_player.fInertia = SNOW_INERTIA;
+				break;
+
+			case MESHFIELDTYPE_SEA:
+				if (g_bFallFlag == false)
+				{
+					g_player.move.y += -5.0f;			// 重力をかける
+					CameraUpdateswitch(false);
+					ReleaseShadow(g_player.nIdxShadow);
+					PlaySound(SOUND_LABEL_FALLSE000);
+					g_bFallFlag = true;
+				}
+				break;
+
+			case MESHFIELDTYPE_MODEL:
+				g_player.fInertia = SNOW_INERTIA;
+				break;
+			}
+
+			if (g_player.pRideField->type != MESHFIELDTYPE_SEA)
+			{// 海以外に乗っていれば
+				// 最後の着地点を記録
+				g_player.posOldRand = g_player.pos;
+			}
+
+			// 影の位置を更新
+			SetPositionShadow(g_player.nIdxShadow, D3DXVECTOR3(g_player.pos.x, g_player.pos.y, g_player.pos.z));
+
+			if (g_player.state == PLAYERSTATE_JUMP || g_player.bJump == true)
+			{// もしジャンプ中だったら
+				SetMotion(MOTIONTYPE_LANDING, false, true, 10);		// 着地モーション
+				g_player.state = PLAYERSTATE_NUETRAL;				// 状態更新
+				g_player.bJump = false;								// ジャンプ状態更新
+			}
+		}
+		else
+		{
+			// 影の位置を更新
+			SetPositionShadow(g_player.nIdxShadow, D3DXVECTOR3(g_player.pos.x, g_player.posOldRand.y, g_player.pos.z));
 		}
 	}
 
-	if (g_player.state == PLAYERSTATE_MOVE)
-	{
-		SetSnow(g_player.pos + D3DXVECTOR3((float)(rand() % 5 - 3), 0.0f, (float)(rand() % 5 - 3)), INIT_D3DXVEC3, 3.0f, SNOWTYPE_000);
-	}
+	// 仲間との当たり判定
+	CollisionFriends(&g_player.pos, g_player.fRadius);
 
-	// 補正
-	fRotMove = AngleNormalize(fRotMove);
+	// アイテムとの当たり判定
+	CollisionItem(&g_player.pos, g_player.fRadius);
 
-	fRotDest = AngleNormalize(fRotDest);
+	// イベント管理
+	PlayerEventController();
 
-	fRotDiff = fRotDest - fRotMove;		// 差分
+	// 全モデル更新
+	UpdateMotion();
+}
+
+//=============================================================================
+//	プレイヤーの更新処理 (リザルト)
+//=============================================================================
+void UpdateResultPlayer(void)
+{
+	static float fRotDiff = 0.0f;
+
+	fRotDiff = -PLAYER_ROTDEST_RESULT - g_player.rot.y;
 
 	fRotDiff = AngleNormalize(fRotDiff);
 
-	fRotMove += fRotDiff * 0.175f;
-
-	fRotDiff = AngleNormalize(fRotDiff);
-
-	g_player.rot.y = fRotMove - D3DX_PI;
+	g_player.rot.y += fRotDiff * 0.0275f;
 
 	g_player.rot.y = AngleNormalize(g_player.rot.y);
 
-	if (GetKeyboardRepeat(DIK_SPACE) == true && g_player.bJump == false)
-	{// スペースキーが押されたかつジャンプ状態じゃない
-		SetMotion(MOTIONTYPE_JUMP, true, false, 10);
-		g_player.state = PLAYERSTATE_JUMP;
-		g_player.move.y = PLAYER_JUMP;
-		g_player.bJump = true;
+	if (GetResultState() == RESULTSTATE_RESULT)
+	{
+		g_player.rot.y = PLAYER_ROTDEST_RESULT;
 	}
 
 	g_player.move.y += GRAVITY;			// 重力をかける
 	g_player.pos += g_player.move;		// 位置を更新
-
-	g_player.move.x += (0.0f - g_player.move.x) * g_player.fInertia;
-	g_player.move.z += (0.0f - g_player.move.z) * g_player.fInertia;
-
-	//g_player.move.x = 0.0f;
-	//g_player.move.z = 0.0f;
-
-	if (g_player.pos.y < 0.0f)
-	{
-		g_player.move.y = GRAVITY;
-		g_player.bJump = false;
-	}
-
-	// 壁との当たり判定
-	CollisionMeshWall(&g_player.pos, &g_player.posOld, &g_player.move);
 
 	// フィールドとの当たり判定
 	g_player.pRideField = CollisionMeshField(&g_player.pos, &g_player.posOld, &g_player.move);
@@ -306,28 +574,46 @@ void UpdatePlayer(void)
 			break;
 
 		case MESHFIELDTYPE_SEA:
-			g_player.pos = D3DXVECTOR3(0.0f, 0.0f, -1500.0f);
+			if (g_bFallFlag == false)
+			{
+				g_player.move.y += -5.0f;			// 重力をかける
+				CameraUpdateswitch(false);
+				PlaySound(SOUND_LABEL_FALLSE000);
+				g_bFallFlag = true;
+			}
+			break;
+
+		case MESHFIELDTYPE_MODEL:
+			g_player.fInertia = SNOW_INERTIA;
 			break;
 		}
 
-		if (g_player.bJump == true)
+		if (g_player.pRideField->type != MESHFIELDTYPE_SEA)
 		{
-			SetMotion(MOTIONTYPE_LANDING, false, true, 10);
-			g_player.state = PLAYERSTATE_NUETRAL;
+			// 最後の着地点を記録
+			g_player.posOldRand = g_player.pos;
 		}
+
+		// 影の位置を更新
+		SetPositionShadow(g_player.nIdxShadow, D3DXVECTOR3(g_player.pos.x, g_player.pos.y, g_player.pos.z));
+	}
+	else
+	{
+		// 影の位置を更新
+		SetPositionShadow(g_player.nIdxShadow, D3DXVECTOR3(g_player.pos.x, g_player.pos.y - g_player.pos.y, g_player.pos.z));
 	}
 
-	// モデルとの当たり判定
-	//CollisionModel(&g_player.pos, &g_player.posOld, &g_player.move, D3DXVECTOR3(10.0f, 10.0f, 10.0f), D3DXVECTOR3(10.0f, 10.0f, 10.0f));
-
-	// 仲間との当たり判定
-	CollisionFriends(&g_player.pos, g_player.fRadius);
-
-	// 影の位置を更新
-	SetPositionShadow(g_player.nIdxShadow, D3DXVECTOR3(g_player.pos.x, g_player.pos.y - g_player.pos.y, g_player.pos.z));
-
-	// 全モデル更新
-	UpdateMotion();
+	if (GetResultState() == RESULTSTATE_RESULT && g_player.motiontypeBlend != MOTIONTYPE_REACTION && g_player.motiontypeBlend != MOTIONTYPE_BUTREACTION)
+	{
+		if (GetNumResultFriends() <= 0)
+		{
+			SetMotion(MOTIONTYPE_BUTREACTION, true, true, 10);
+		}
+		else
+		{
+			SetMotion(MOTIONTYPE_REACTION, true, true, 10);
+		}
+	}
 }
 
 //=============================================================================
@@ -569,6 +855,7 @@ void UpdateMotion(void)
 			g_player.nCounterBlend = 0;									// カウンターリセット
 			g_player.motiontype = g_player.motiontypeBlend;				// 次のモーションに切り替える
 			g_player.nCounterMotion = g_player.nCounterMotionBlend;		// モーションカウンターをブレンドと同期
+			g_player.nNumKey = g_player.nNumKeyBlend;					// キーの総数をブレンドと同期
 			g_player.nKey = g_player.nKeyBlend;							// キー番号をブレンドと同期
 			g_player.bLoopMotion = g_player.bLoopMotionBlend;			// ループ状態をブレンドと同期
 			g_player.bBlendMotion = false;								// ブレンド状態を終了
@@ -678,9 +965,95 @@ int FriendsAdd(D3DXVECTOR3 **posDest)
 }
 
 //=============================================================================
+//	プレイヤーイベント処理
+//=============================================================================
+void SetPlayerEvent(PLAYEREVENT event)
+{
+
+	static int nCntFall = 0;
+	g_player.event = event;
+
+	switch (g_player.event)
+	{
+	case PLAYEREVENT_FRIENDS:
+		SetMotion(MOTIONTYPE_REACTION, false, true, 10);
+		g_player.move = INIT_D3DXVEC3;
+		break;
+
+	case PLAYEREVENT_FALL:
+		SetNoneFade(COLOR_BLACK, DEFAULT_FADESPEED, DEFAULT_FADESPEED);
+		break;
+	}
+
+	if (g_bFallFlag == true)
+	{
+		nCntFall++;
+		if (nCntFall >= 60)
+		{
+			SetNoneFade(COLOR_BLACK, DEFAULT_FADESPEED, DEFAULT_FADESPEED);
+		}
+	}
+}
+
+//=============================================================================
+//	プレイヤーイベント処理
+//=============================================================================
+void PlayerEventController(void)
+{
+	static int nCntFall = 0;
+
+	if (g_bFallFlag == true)
+	{
+		nCntFall++;
+		if (nCntFall >= 60)
+		{
+			nCntFall = 0;
+			SetNoneFade(COLOR_BLACK, DEFAULT_FADESPEED, DEFAULT_FADESPEED);
+		}
+	}
+
+	if (g_bFallFlag == true && GetFade() == FADE_IN)
+	{
+		g_player.pos = g_player.posOldRand;
+		g_player.move = INIT_D3DXVEC3;
+		g_player.nIdxShadow = SetShadow();
+		CameraUpdateswitch(true);
+		g_bFallFlag = false;
+	}
+
+	switch (g_player.event)
+	{
+	case PLAYEREVENT_FRIENDS:
+		if (g_player.motiontypeBlend != MOTIONTYPE_REACTION)
+		{
+			g_player.event = PLAYEREVENT_NONE;
+			g_player.state = PLAYERSTATE_NUETRAL;
+		}
+		break;
+	}
+}
+
+//=============================================================================
+//	プレイヤーイベント取得処理
+//=============================================================================
+PLAYEREVENT GetPlayerEvent(void)
+{
+	return g_player.event;
+}
+
+//=============================================================================
 //	ログ更新処理
 //=============================================================================
 void UpdatePosLog(int nIdxPosLog, D3DXVECTOR3 pos)
 {
 	g_posLog[nIdxPosLog] = pos;
+}
+
+//=============================================================================
+//	SE管理処理
+//=============================================================================
+void PlayerSEController(SOUND_LABEL SE)
+{
+
+
 }

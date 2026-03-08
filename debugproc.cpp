@@ -54,8 +54,10 @@ void UninitDebugProc(void)
 //=============================================================================
 void UpdateDebugProc(void)
 {
+#ifndef _DEBUG
 	// デバッグ情報バッファのクリア
-	//memset(&g_aStrDebug[0], 0, sizeof g_aStrDebug);
+	memset(&g_aStrDebug[0], 0, sizeof g_aStrDebug);
+#endif // _DEBUG
 }
 
 //=============================================================================

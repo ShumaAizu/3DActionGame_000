@@ -7,11 +7,22 @@
 
 #include "main.h"
 #include "result.h"
+#include "loadscript.h"
 #include "input.h"
 #include "sound.h"
 #include "fade.h"
 #include "game.h"
+#include "camera.h"
 #include "resultmenu.h"
+#include "resultui.h"
+#include "player.h"
+#include "friends.h"
+
+#include "model.h"
+#include "meshfield.h"
+#include "meshcylinder.h"
+#include "meshdome.h"
+#include "camera.h"
 
 //*****************************************************************************
 // マクロ定義
@@ -24,70 +35,51 @@
 //*****************************************************************************
 LPDIRECT3DTEXTURE9 g_pTextureResult[MAX_RESULT] = {};	// テクスチャへのポインタ
 LPDIRECT3DVERTEXBUFFER9 g_pVtxBuffResult = NULL;		// 頂点バッファへのポインタ
-int g_nResultFadeCounter = NULL;
+int g_nResultFadeCounter = NULL;						// 画面遷移までのカウント
+int g_bResultEvent = true;								// リザルトイベントを行っているか
+RESULTSTATE g_ResultState;								// リザルトの状態
+ResultFriendsInfo g_aResultFriendsInfo[MAX_FRIENDS];	// 仲間の情報
+int g_nNumResultFriendsInfo;							// 仲間の情報数
+int g_nGetNumFriends;									// 仲間の数
 
 //====================================
 //	リザルトの初期化処理
 //====================================
 void InitResult(void)
 {
-	LPDIRECT3DDEVICE9 pDevice;				// デバイスへのポインタ
-
 	// デバイスの取得
-	pDevice = GetDevice();
-
-	// テクスチャの読み込み
-	D3DXCreateTextureFromFile(pDevice,
-		"data\\TEXTURE\\gameoverbg.jpg",
-		&g_pTextureResult[0]);
-
-	D3DXCreateTextureFromFile(pDevice,
-		"data\\TEXTURE\\gameoverbg.jpg",
-		&g_pTextureResult[1]);
-
-	// 頂点バッファの生成
-	pDevice->CreateVertexBuffer(sizeof(VERTEX_2D) * 4,
-		D3DUSAGE_WRITEONLY,
-		FVF_VERTEX_2D,
-		D3DPOOL_MANAGED,
-		&g_pVtxBuffResult,
-		NULL);
-
-	VERTEX_2D *pVtx;			// 頂点情報へのポインタ
-
-	// 頂点バッファをロックし,頂点情報へのポインタを取得
-	g_pVtxBuffResult->Lock(0, 0, (void * *)&pVtx, 0);
-
-	// 頂点座標の設定
-	pVtx[0].pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-	pVtx[1].pos = D3DXVECTOR3(1280.0f, 0.0f, 0.0f);
-	pVtx[2].pos = D3DXVECTOR3(0.0f, 720.0f, 0.0f);
-	pVtx[3].pos = D3DXVECTOR3(1280.0f, 720.0f, 0.0f);
-
-	// rhwの設定
-	pVtx[0].rhw = 1.0f;
-	pVtx[1].rhw = 1.0f;
-	pVtx[2].rhw = 1.0f;
-	pVtx[3].rhw = 1.0f;
-
-	// 頂点カラーの設定
-	pVtx[0].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
-	pVtx[1].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
-	pVtx[2].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
-	pVtx[3].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
-
-	// テクスチャ座標の設定
-	pVtx[0].tex = D3DXVECTOR2(0.0f, 0.0f);
-	pVtx[1].tex = D3DXVECTOR2(1.0f, 0.0f);
-	pVtx[2].tex = D3DXVECTOR2(0.0f, 1.0f);
-	pVtx[3].tex = D3DXVECTOR2(1.0f, 1.0f);
-
-	// 頂点バッファをアンロックする
-	g_pVtxBuffResult->Unlock();
+	LPDIRECT3DDEVICE9 pDevice = GetDevice();
 
 	g_nResultFadeCounter = 0;
 
-	InitResultMenu();
+	g_nNumResultFriendsInfo = 0;
+
+	g_nGetNumFriends = GetNumFriends();
+
+	g_bResultEvent = true;
+
+	// リザルトUIの初期化処理
+	InitResultUI();
+
+	// プレイヤーの初期化処理
+	InitPlayer(MODE_RESULT);
+
+	// 仲間の初期化処理
+	InitFriends();
+
+	// リザルトスクリプト読み込み
+	LoadScript(RESULT_SCRIPT);
+
+	for (int nCntFriends = 0; nCntFriends < GetNumResultFriends(); nCntFriends++)
+	{
+		SetFriendsResult(&g_aResultFriendsInfo[nCntFriends]);
+	}
+
+	SetMotion(MOTIONTYPE_NEUTRAL, true, false, 0);
+
+	g_ResultState = RESULTSTATE_NONE;
+
+	CameraUpdateswitch(true);
 }
 
 //====================================
@@ -98,24 +90,14 @@ void UninitResult(void)
 	// サウンドを止める
 	StopSound();
 
-	for (int nCntResult = 0; nCntResult < MAX_RESULT; nCntResult++)
-	{
-		// テクスチャの破棄
-		if (g_pTextureResult[nCntResult] != NULL)
-		{
-			g_pTextureResult[nCntResult]->Release();
-			g_pTextureResult[nCntResult] = NULL;
-		}
-	}
+	// リザルトUIの終了処理
+	UninitResultUI();
 
-	// 頂点バッファの破棄
-	if (g_pVtxBuffResult != NULL)
-	{
-		g_pVtxBuffResult->Release();
-		g_pVtxBuffResult = NULL;
-	}
+	// プレイヤーの終了処理
+	UninitPlayer();
 
-	UninitResultMenu();
+	// 仲間の終了処理
+	UninitFriends();
 }
 
 //====================================
@@ -123,34 +105,26 @@ void UninitResult(void)
 //====================================
 void DrawResult(void)
 {
-	LPDIRECT3DDEVICE9 pDevice;				// デバイスへのポインタ
+	// プレイヤーの描画処理
+	DrawPlayer();
 
-	// デバイスの取得
-	pDevice = GetDevice();
+	// 仲間の描画処理
+	DrawFriends();
 
-	// 頂点バッファをデータストリームに設定
-	pDevice->SetStreamSource(0, g_pVtxBuffResult, 0, sizeof(VERTEX_2D));
+	// モデルの描画処理
+	DrawModel();
 
-	// 頂点フォーマットの設定
-	pDevice->SetFVF(FVF_VERTEX_2D);
+	// メッシュフィールドの描画処理
+	DrawMeshField();
 
-	switch (GetNextGameState())
-	{
-	case GAMESTATE_CLEAR:
-		// テクスチャの設定
-		pDevice->SetTexture(0, g_pTextureResult[0]);
-		break;
+	// メッシュシリンダーの描画処理
+	DrawMeshCylinder();
 
-	case GAMESTATE_GAMEOVER:
-		// テクスチャの設定
-		pDevice->SetTexture(0, g_pTextureResult[1]);
-		break;
-	}
+	// メッシュドームの描画処理
+	DrawMeshDome();
 
-	// ポリゴンの描画
-	pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, 2);
-
-	DrawResultMenu();
+	// リザルトUIの描画処理
+	DrawResultUI();
 }
 
 //====================================
@@ -158,7 +132,56 @@ void DrawResult(void)
 //====================================
 void UpdateResult(void)
 {
+	// リザルトUIの更新処理
+	UpdateResultUI();
 
-	UpdateResultMenu();
+	// プレイヤーの更新処理
+	UpdatePlayer(MODE_RESULT);
 
+	// 仲間の更新処理
+	UpdateFriends();
+
+	// モデルの更新処理
+	UpdateModel();
+
+	// メッシュフィールドの更新処理
+	UpdateMeshField();
+
+	// メッシュシリンダーの更新処理
+	UpdateMeshCylinder();
+
+	// メッシュドームの更新処理
+	UpdateMeshDome();
+
+	if ((GetKeyboardTrigger(DIK_RETURN) == true || GetJoypadTrigger(JOYKEY_A) == true) && g_ResultState == RESULTSTATE_RESULT)
+	{
+		SetFade(MODE_TITLE, COLOR_WHITE, DEFAULT_FADESPEED, DEFAULT_FADESPEED);
+	}
+}
+
+//=============================================================================
+//	リザルトイベント取得処理
+//=============================================================================
+RESULTSTATE GetResultState(void)
+{
+	return g_ResultState;
+}
+
+//=============================================================================
+//	リザルトイベント設定処理
+//=============================================================================
+void SetResultState(RESULTSTATE state)
+{
+	g_ResultState = state;
+}
+
+//=============================================================================
+//	リザルトでの仲間の情報設定処理
+//=============================================================================
+void SetResultFriendsInfo(D3DXVECTOR3 pos, D3DXVECTOR3 rot)
+{
+	g_aResultFriendsInfo[g_nNumResultFriendsInfo].pos = pos;
+	g_aResultFriendsInfo[g_nNumResultFriendsInfo].rot = rot * D3DX_PI;
+
+	g_nNumResultFriendsInfo++;
 }

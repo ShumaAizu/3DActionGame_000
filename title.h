@@ -15,10 +15,10 @@
 //*****************************************************************************
 typedef enum
 {
-	TITLESTATE_OP = 0,			// オープニング
-	TITLESTATE_WAIT,			// 待機
+	TITLESTATE_WAIT = 0,		// 待機
+	TITLESTATE_MOVE,			// 移動
+	TITLESTATE_OP,				// オープニング
 	TITLESTATE_MENU,			// メニュー
-	TITLESTATE_SELECTLEVEL,		// 難易度選択
 	TITLESTATE_MAX
 }TITLESTATE;
 

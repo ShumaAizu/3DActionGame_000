@@ -19,6 +19,7 @@
 #include "dinput.h"								// 入力処理に必要
 #include "xaudio2.h"							// サウンド処理に必要
 #include "xinput.h"								// ジョイパッド処理に必要
+#include <process.h>						    // マルチスレッド処理
 
 //*****************************************************************************
 // ライブラリのリンク
@@ -43,6 +44,9 @@
 #define INIT_D3DXVEC3			(D3DXVECTOR3(0.0f, 0.0f, 0.0f))													// D3DXVECTOR3型初期化
 #define RANDAM_VEC3(X, Y, Z)	(D3DXVECTOR3((float)(rand() % X), (float)(rand() % Y), (float)(rand() % Z)))	// ランダムVECTOR3
 #define VEC3TOROT(vec3)			(vec3 * D3DX_PI)
+
+#define COLOR_BLACK				(D3DXCOLOR(0.0f, 0.0f, 0.0f, 1.0f))
+#define COLOR_WHITE				(D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f))
 
 //*****************************************************************************
 // 頂点情報の構造体定義

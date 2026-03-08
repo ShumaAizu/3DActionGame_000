@@ -50,7 +50,7 @@ void InitEffect(void)
 
 	// テクスチャの読み込み
 	D3DXCreateTextureFromFile(pDevice,
-		"data\\TEXTURE\\effect000.jpg",
+		"data\\TEXTURE\\effect000.png",
 		&g_pTextureEffect);
 
 	// 初期化
@@ -199,7 +199,7 @@ void DrawEffect(void)
 		pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, nCntEffect * 4, 2);
 	}
 
-	// Zテストを無効にする
+	// Zテストを有効にする
 	pDevice->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
 	pDevice->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
 

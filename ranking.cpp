@@ -130,7 +130,7 @@ void UninitRanking(void)
 
 	UninitRankingRank();
 
-	SetGameState(GAMESTATE_NORMAL, 60);
+	SetGameFlag(GAMEFLAG_NORMAL, 60);
 
 	g_nRankUpdate = -1;
 
@@ -210,12 +210,12 @@ void UpdateRanking(void)
 
 		}
 		g_bRanking_Modechange = true;
-		SetFade(MODE_TITLE, 0.025f, 0.025f);
+		SetFade(MODE_TITLE, COLOR_BLACK, 0.025f, 0.025f);
 	}
 
 	if (g_nRankingFadeCounter >= RANKINGFADE_TIMER && GetFade() != FADE_OUT)
 	{
-		SetFade(MODE_TITLE, 0.025f, 0.025f);
+		SetFade(MODE_TITLE, COLOR_BLACK,  0.025f, 0.025f);
 	}
 }
 

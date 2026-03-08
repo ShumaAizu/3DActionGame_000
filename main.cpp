@@ -13,6 +13,7 @@
 #include "effect.h"
 #include "particle.h"
 #include "title.h"
+#include "tutorial.h"
 #include "game.h"
 #include "result.h"
 #include "ranking.h"
@@ -37,11 +38,13 @@
 
 #include "bullet.h"
 
+#include "thread.h"
+
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
 #define CLASS_NAME			"WindowClass"					// ウインドウクラスの名前
-#define WINDOW_NAME			"3Dアクション"					// ウインドウの名前
+#define WINDOW_NAME			"ペンギンフレンドシップ！"		// ウインドウの名前
 
 //*****************************************************************************
 // プロトタイプ宣言
@@ -63,6 +66,9 @@ int g_nFPS = 60;							// 現在の最大FPS
 bool g_isFullscreen = false;				// フルスクリーンの使用状況
 RECT g_windowRect;							// ウィンドウサイズ
 bool g_bDebug = false;						// デバッグ表示の状態
+
+DevData g_Device = {};
+bool g_bMainThread = true;
 
 //=============================================================================
 // メイン関数
@@ -181,6 +187,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hInstancePrev, LPSTR lpCmdLine
 		}
 	}
 
+	g_bMainThread = false;
+
 	// 終了処理
 	Uninit();
 
@@ -254,6 +262,13 @@ HRESULT Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 	{
 		return E_FAIL;
 	}
+
+	g_pD3D->CreateDevice(D3DADAPTER_DEFAULT,
+		D3DDEVTYPE_HAL,
+		hWnd,
+		D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_MULTITHREADED,
+		&d3dpp,
+		&g_pD3DDevice);
 	
 	// 現在のディスプレイモードを取得
 	if (FAILED(g_pD3D->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &d3ddm)))
@@ -315,7 +330,7 @@ HRESULT Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 	}
 
 	// レンダーステートの設定
-	g_pD3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);				// カリングの設定
+	g_pD3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);				// カリングの設定
 	g_pD3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);				//
 	g_pD3DDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);		// アルファブレンドの設定
 	g_pD3DDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);	//
@@ -361,6 +376,24 @@ HRESULT Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 	// ライトの初期化
 	InitLight();
 
+	// メッシュフィールドの初期化
+	InitMeshField();
+
+	// メッシュウォールの初期化
+	InitMeshWall();
+
+	// メッシュシリンダーの初期化
+	InitMeshCylinder();
+
+	// メッシュリングの初期化
+	InitMeshRing();
+
+	// メッシュドームの初期化
+	InitMeshDome();
+
+	// メッシュスフィアの初期化
+	InitMeshSphere();
+
 	// モデルの初期化処理
 	InitModel();
 
@@ -371,12 +404,15 @@ HRESULT Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 	InitSound(hWnd);
 
 	// モードの設定
-	InitFade(g_mode);
+	InitFade(g_mode, COLOR_WHITE);
 
 	// デバッグ表示の初期化処理
 	InitDebugProc();
 
-	//ShowCursor(false);
+#ifndef _DEBUG
+	// マウスカーソルを非表示
+	ShowCursor(false);
+#endif
 
 	return S_OK;
 }
@@ -403,11 +439,32 @@ void Uninit(void)
 	// ライトの終章処理
 	UninitLight();
 
+	// メッシュフィールドの終了処理
+	UninitMeshField();
+
+	// メッシュウォールの終了処理
+	UninitMeshWall();
+
+	// メッシュシリンダーの終了処理
+	UninitMeshCylinder();
+
+	// メッシュリングの終了処理
+	UninitMeshRing();
+
+	// メッシュドームの終了処理
+	UninitMeshDome();
+
+	// メッシュスフィアの終了処理
+	UninitMeshSphere();
+
 	// モデルの終了処理
 	UninitModel();
 
 	// タイトル画面の終了処理
 	UninitTitle();
+
+	// チュートリアル画面の終了処理
+	UninitTutorial();
 
 	// ゲーム画面の終了処理
 	UninitGame();
@@ -476,11 +533,23 @@ void Update(void)
 	// カメラの更新処理
 	UpdateCamera();
 
+	void (*pFunc) = ReturnFunc(g_mode);
+
+	if (pFunc != NULL)
+	{
+		pFunc;
+	}
+
 	switch (g_mode)
 	{
 		// タイトルモード
 	case MODE_TITLE:
 		UpdateTitle();
+		break;
+
+		// チュートリアルモード
+	case MODE_TUTORIAL:
+		UpdateTutorial();
 		break;
 
 		// ゲームモード
@@ -498,6 +567,7 @@ void Update(void)
 		UpdateRanking();
 		break;
 	}
+
 
 	// フェードの更新処理
 	UpdateFade();
@@ -526,6 +596,11 @@ void Draw(void)
 			// タイトルモード
 		case MODE_TITLE:
 			DrawTitle();
+			break;
+
+			// チュートリアルモード
+		case MODE_TUTORIAL:
+			DrawTutorial();
 			break;
 
 			// ゲームモード
@@ -583,6 +658,11 @@ void SetMode(MODE mode)
 		UninitTitle();
 		break;
 
+		// チュートリアルモード
+	case MODE_TUTORIAL:
+		UninitTutorial();
+		break;
+
 		// ゲームモード
 	case MODE_GAME:
 		UninitGame();
@@ -607,6 +687,11 @@ void SetMode(MODE mode)
 		InitTitle();
 		break;
 
+		// チュートリアルモード
+	case MODE_TUTORIAL:
+		InitTutorial();
+		break;
+
 		// ゲームモード
 	case MODE_GAME:
 		InitGame();
@@ -622,6 +707,9 @@ void SetMode(MODE mode)
 		InitRanking();
 		break;
 	}
+
+	// カメラをセット
+	SetModeCamera(mode);
 
 	// モードの更新
 	g_mode = mode;
@@ -663,6 +751,7 @@ bool CrossCollision(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTOR3 posStar
 	float fAngleVecLine;											// 境界線ベクトルの角度
 	float fLenght = 0.0f;											// 壁ずりの長さ
 	float fPosOldCross = 0.0f;
+	bool bCollision = false;
 
 	if (bIn == true)
 	{
@@ -701,7 +790,8 @@ bool CrossCollision(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTOR3 posStar
 	{
 		if (bRetrun == false)
 		{
-			return true;
+			bCollision = true;
+			return bCollision;
 		}
 
 		Intersection = D3DXVECTOR3(vecLine.x * fRate, vecLine.y * fRate, vecLine.z * fRate);		// 交点
@@ -735,10 +825,11 @@ bool CrossCollision(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTOR3 posStar
 			pPos->z += -vecLine.z * fLenght;
 		}
 
-		return true;
+		bCollision = true;
+		return bCollision;
 	}
 
-	return false;
+	return bCollision;
 }
 
 //================================================
@@ -768,4 +859,29 @@ void ToggleFullscreen(HWND hWnd)
 	}
 
 	g_isFullscreen = !g_isFullscreen;
+}
+
+////================================================================================================================
+//// --- デバイスの取得 ---
+////================================================================================================================
+//LPDIRECT3DDEVICE9 GetDevice(void)
+//{
+//	//g_Device.LockDevData();
+//	return g_pD3DDevice;
+//}
+
+//================================================================================================================
+// --- デバイスの取得終了 ---
+//================================================================================================================
+void EndDevice(void)
+{
+	g_Device.UnlockDevData();
+}
+
+//================================================================================================================
+// --- メインスレッドの状態の取得 ---
+//================================================================================================================
+bool GetIsMainThread(void)
+{
+	return g_bMainThread;
 }

@@ -7,7 +7,10 @@
 
 #include "main.h"
 #include "shadow.h"
+#include "meshfield.h"
+#include "debugproc.h"
 #include "input.h"
+#include "player.h"
 
 //*****************************************************************************
 // マクロ定義
@@ -36,6 +39,8 @@ void InitShadow(void)
 	for (int nCntShadow = 0; nCntShadow < MAX_SHADOW; nCntShadow++)
 	{
 		g_ashadow[nCntShadow].pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+		g_ashadow[nCntShadow].posOld = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+		g_ashadow[nCntShadow].move = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 		g_ashadow[nCntShadow].rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 		g_ashadow[nCntShadow].bUse = false;
 	}
@@ -174,7 +179,21 @@ void DrawShadow(void)
 //=============================================================================
 void UpdateShadow(void)
 {
+	Shadow* pShadow = &g_ashadow[0];
 
+	for (int nCntShadow = 0; nCntShadow < MAX_SHADOW; nCntShadow++, pShadow++)
+	{
+		if (pShadow->bUse == false)
+		{
+			continue;
+		}
+
+		PrintDebugProc("影の位置 = { %.2f %.2f %.2f }\n", pShadow->pos.x, pShadow->pos.y, pShadow->pos.z);
+
+		pShadow->posOld = pShadow->pos;
+
+		CollisionMeshField(&pShadow->pos, &pShadow->posOld, &pShadow->move);
+	}
 }
 
 //=============================================================================
@@ -201,4 +220,12 @@ int SetShadow(void)
 void SetPositionShadow(int IdxShadow, D3DXVECTOR3 pos)
 {
 	g_ashadow[IdxShadow].pos = pos;
+}
+
+//=============================================================================
+//	影の解除処理
+//=============================================================================
+void ReleaseShadow(int IdxShadow)
+{
+	g_ashadow[IdxShadow].bUse = false;
 }

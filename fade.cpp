@@ -19,23 +19,23 @@ MODE g_modeNext;										// 次の画面(モード)
 D3DXCOLOR g_colorFade;									// ポリゴン(フェード)の色
 float g_fFadeInSpeed = 0;								// フェードイン速度
 float g_fFadeOutSpeed = 0;								// フェードアウト速度
+bool g_bSetMode;										// モード切替
 
 //====================================
 //	フェードの初期化処理
 //====================================
-void InitFade(MODE modeNext)
+void InitFade(MODE modeNext, D3DXCOLOR col)
 {
 	LPDIRECT3DDEVICE9 pDevice;				// デバイスへのポインタ
 
 	//デバイスの取得
 	pDevice = GetDevice();
 
-	g_fade = FADE_IN;						// フェードイン状態に
+	g_fade = FADE_IN;			// フェードイン状態に
 
-	g_modeNext = modeNext;					// 次の画面を指定
+	g_modeNext = modeNext;		// 次の画面を指定
 
-	g_colorFade = D3DXCOLOR(0.0f, 0.0f, 0.0f, 1.0f);		// 黒いポリゴン(不透明)にしておく
-
+	g_colorFade = col;			// 指定した色にする
 
 	//頂点バッファの生成
 	pDevice->CreateVertexBuffer(sizeof(VERTEX_2D) * 4,
@@ -48,6 +48,7 @@ void InitFade(MODE modeNext)
 	// 初期化
 	g_fFadeInSpeed = 0.025f;
 	g_fFadeOutSpeed = 0.025f;
+	g_bSetMode = true;
 
 	VERTEX_2D *pVtx;			// 頂点情報へのポインタ
 
@@ -139,8 +140,11 @@ void UpdateFade(void)
 				g_colorFade.a = 1.0f;
 				g_fade = FADE_IN;		// フェードイン状態にする
 
-				// モード設定
-				SetMode(g_modeNext);
+				if (g_bSetMode == true)
+				{
+					// モード設定
+					SetMode(g_modeNext);
+				}
 			}
 		}
 
@@ -163,11 +167,13 @@ void UpdateFade(void)
 //====================================
 //	フェードの設定
 //====================================
-void SetFade(MODE modeNext, float fFadeInSpeed, float fFadeOutSpeed)
+void SetFade(MODE modeNext, D3DXCOLOR col, float fFadeInSpeed, float fFadeOutSpeed)
 {
 	if (g_fade == FADE_NONE)
 	{
 		g_fade = FADE_OUT;			// フェードアウト状態に
+
+		g_bSetMode = true;			// モード切替
 
 		g_fFadeInSpeed = fFadeInSpeed;
 
@@ -175,7 +181,30 @@ void SetFade(MODE modeNext, float fFadeInSpeed, float fFadeOutSpeed)
 
 		g_modeNext = modeNext;		// 次の画面(モード)を設定
 
-		g_colorFade = D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f);		// 黒いポリゴン(透明)にしておく
+		g_colorFade = col;			// 指定した色に設定
+
+		g_colorFade.a = 0.0f;		// 透明にしておく
+	}
+}
+
+//====================================
+//	フェードの設定
+//====================================
+void SetNoneFade(D3DXCOLOR col, float fFadeInSpeed, float fFadeOutSpeed)
+{
+	if (g_fade == FADE_NONE)
+	{
+		g_fade = FADE_OUT;			// フェードアウト状態に
+
+		g_bSetMode = false;			// モード切替
+
+		g_fFadeInSpeed = fFadeInSpeed;
+
+		g_fFadeOutSpeed = fFadeOutSpeed;
+
+		g_colorFade = col;			// 指定した色に設定
+
+		g_colorFade.a = 0.0f;		// 透明にしておく
 	}
 }
 

@@ -23,6 +23,10 @@
 #include "bullet.h"
 #include "shadow.h"
 #include "snow.h"
+#include "time.h"
+#include "request.h"
+#include "item.h"
+#include "itemui.h"
 
 #include "meshfield.h"
 #include "meshwall.h"
@@ -34,10 +38,9 @@
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
-GAMESTATE g_gameState = GAMESTATE_NORMAL;				// ゲームの状態
-GAMESTATE g_nextgameState = GAMESTATE_NORMAL;			// 次のゲームの状態
-GAMEMODE g_gamemode = GAMEMODE_MAX;						// ゲームモードの状態
-int g_nCounterGameState = 0;							// 状態管理カウンター
+GAMEFLAG g_gameFlag = GAMEFLAG_NORMAL;					// ゲームの状態
+GAMEFLAG g_nextgameFlag = GAMEFLAG_NORMAL;				// 次のゲームの状態
+int g_nCounterGameFlag = 0;								// 状態管理カウンター
 bool g_bPause = false;									// ポーズ中かどうか
 
 //========================================
@@ -45,46 +48,38 @@ bool g_bPause = false;									// ポーズ中かどうか
 //========================================
 void InitGame(void)
 {
-	g_gameState = GAMESTATE_NORMAL;
+	g_gameFlag = GAMEFLAG_NORMAL;
 
-	g_nextgameState = GAMESTATE_NORMAL;
+	g_nextgameFlag = GAMEFLAG_NORMAL;
 
-	g_nCounterGameState = 0;
+	g_nCounterGameFlag = 0;
 
 	// ポーズ状態の初期化
 	g_bPause = false;
-
-	// メッシュフィールドの初期化
-	InitMeshField();
 
 	// 影の初期化
 	InitShadow();
 
 	// プレイヤーの初期化
-	InitPlayer();
+	InitPlayer(MODE_GAME);
+
+	// リクエストの初期化処理
+	InitRequest();
 
 	// 仲間の初期化処理
 	InitFriends();
 
-	InitBullet();
-
 	// 雪の初期化
 	InitSnow();
 
-	// メッシュウォールの初期化
-	InitMeshWall();
+	// アイテムの初期化処理
+	InitItem();
 
-	// メッシュシリンダーの初期化
-	InitMeshCylinder();
+	// アイテムUIの初期化
+	InitItemUI();
 
-	// メッシュリングの初期化
-	InitMeshRing();
-
-	// メッシュドームの初期化
-	InitMeshDome();
-
-	// メッシュスフィアの初期化
-	InitMeshSphere();
+	// 制限時間の初期化
+	InitTime();
 
 	// エフェクトの初期化処理
 	InitEffect();
@@ -95,11 +90,13 @@ void InitGame(void)
 	// ポーズメニューの初期化
 	InitPause();
 
+	// ゲームスクリプト読み込み
 	LoadScript(GAME_SCRIPT);
 
-	LoadObject(OBJECT_SCRIPT);
-
+	// モーションセット
 	SetMotion(MOTIONTYPE_NEUTRAL, true, false, 0);
+
+	PlaySound(SOUND_LABEL_GAMEBGM000);
 }
 
 //========================================
@@ -107,16 +104,11 @@ void InitGame(void)
 //========================================
 void UninitGame(void)
 {
-	// メッシュフィールドの終了処理
-	UninitMeshField();
-
 	// プレイヤーの終了処理
 	UninitPlayer();
 
 	// 仲間の終了処理
 	UninitFriends();
-
-	UninitBullet();
 
 	// 影の終了処理
 	UninitShadow();
@@ -124,20 +116,17 @@ void UninitGame(void)
 	// 雪の終了処理
 	UninitSnow();
 
-	// メッシュウォールの終了処理
-	UninitMeshWall();
+	// リクエストの終了処理
+	UninitRequest();
 
-	// メッシュシリンダーの終了処理
-	UninitMeshCylinder();
+	// アイテムの終了処理
+	UninitItem();
 
-	// メッシュリングの終了処理
-	UninitMeshRing();
+	//
+	UninitItemUI();
 
-	// メッシュドームの終了処理
-	UninitMeshDome();
-
-	// メッシュスフィアの終了処理
-	UninitMeshSphere();
+	// 制限時間の終了処理
+	UninitTime();
 
 	// エフェクトの終了処理
 	UninitEffect();
@@ -157,13 +146,7 @@ void UninitGame(void)
 //========================================
 void UpdateGame(void)
 {
-
-	if (GetKeyboardTrigger(DIK_BACK) == true)
-	{
-		SetFade(MODE_TITLE, DEFAULT_FADESPEED, DEFAULT_FADESPEED);
-	}
-
-	if ((GetKeyboardTrigger(DIK_P) == true || GetJoypadTrigger(JOYKEY_START) == true) && g_gameState == GAMESTATE_NORMAL)
+	if ((GetKeyboardTrigger(DIK_P) == true || GetJoypadTrigger(JOYKEY_START) == true) && GetFade() != FADE_IN && g_gameFlag == GAMEFLAG_NORMAL)
 	{ // ポーズキーが押された
 		g_bPause = g_bPause ? false : true;		// ポーズ状態を切り替える
 		if (g_bPause == true)
@@ -175,22 +158,19 @@ void UpdateGame(void)
 
 	if (g_bPause == true)
 	{ // ポーズ中なら
-
 		// ポーズの更新処理
 		UpdatePause();
 	}
-	else if(GetFade() != FADE_OUT && g_gameState == GAMESTATE_NORMAL)
+	else if(GetFade() != FADE_OUT)
 	{
 		// メッシュフィールドの更新処理
 		UpdateMeshField();
 
 		// プレイヤーの更新処理
-		UpdatePlayer();
+		UpdatePlayer(MODE_GAME);
 
 		// 仲間の更新処理
 		UpdateFriends();
-
-		UpdateBullet();
 
 		// モデルの更新処理
 		UpdateModel();
@@ -200,6 +180,18 @@ void UpdateGame(void)
 
 		// 雪の更新処理
 		UpdateSnow();
+
+		// リクエストの更新処理
+		UpdateRequest();
+
+		// アイテムの更新処理
+		UpdateItem();
+
+		// 
+		UpdateItemUI();
+
+		// 制限時間の更新処理
+		UpdateTime();
 
 		// メッシュウォールの更新処理
 		UpdateMeshWall();
@@ -223,32 +215,29 @@ void UpdateGame(void)
 		UpdateParticle();
 	}
 
+#ifdef _DEBUG
 	if (GetKeyboardTrigger(DIK_RETURN) == true)
 	{
-		SetFade(MODE_RESULT, DEFAULT_FADESPEED, DEFAULT_FADESPEED);
+		//SetFade(MODE_RESULT, COLOR_WHITE, DEFAULT_FADESPEED, DEFAULT_FADESPEED);
 	}
+#endif
 
-	if (g_nextgameState == GAMESTATE_CLEAR || g_nextgameState == GAMESTATE_GAMEOVER)
+	if (g_nextgameFlag == GAMEFLAG_CLEAR || g_nextgameFlag == GAMEFLAG_GAMEOVER)
 	{ // 次の状態がクリアかゲームオーバーになったら
-		g_nCounterGameState--;			// カウントを減らす
-		if (g_nCounterGameState <= 0)
+		g_nCounterGameFlag--;			// カウントを減らす
+		if (g_nCounterGameFlag <= 0)
 		{ // 回り切ったら
 			// ゲーム状態を次の状態に移す
-			g_gameState = g_nextgameState;
+			SaveFriends();
+			SetNumResultFriends();
+			g_gameFlag = g_nextgameFlag;
 		}
 
-		switch (g_gameState)
+		switch (g_gameFlag)
 		{
 			// クリア状態
-		case GAMESTATE_CLEAR:
-
-			// 
-
-			break;
-
-			// ゲームオーバー状態
-		case GAMESTATE_GAMEOVER:
-			SetMode(MODE_RESULT);
+		case GAMEFLAG_CLEAR: 
+			SetFade(MODE_RESULT, COLOR_WHITE, DEFAULT_FADESPEED, DEFAULT_FADESPEED);
 			break;
 		}
 	}
@@ -268,8 +257,6 @@ void DrawGame(void)
 	// 仲間の描画処理
 	DrawFriends();
 
-	DrawBullet();
-
 	// モデルの描画処理
 	DrawModel();
 
@@ -278,6 +265,9 @@ void DrawGame(void)
 
 	// 雪の描画処理
 	DrawSnow();
+
+	// アイテムの描画処理
+	DrawItem();
 
 	// メッシュウォールの描画処理
 	DrawMeshWall();
@@ -294,8 +284,17 @@ void DrawGame(void)
 	// メッシュスフィアの描画処理
 	DrawMeshSphere();
 
+	// リクエストの描画処理
+	DrawRequest();
+
 	// 影の描画処理
 	DrawShadow();
+
+	// 制限時間の描画処理
+	DrawTime();
+
+	//
+	DrawItemUI();
 
 	if (g_bPause == true)
 	{ // ポーズ中なら
@@ -309,45 +308,29 @@ void DrawGame(void)
 //========================================
 //	ゲームの状態設定
 //========================================
-void SetGameState(GAMESTATE state, int nCounter)
+void SetGameFlag(GAMEFLAG state, int nCounter)
 {
-	g_gameState = GAMESTATE_NONE;
+	g_gameFlag = GAMEFLAG_NONE;
 
-	g_nextgameState = state;
+	g_nextgameFlag = state;
 
-	g_nCounterGameState = nCounter;
-}
-
-//========================================
-//	ゲームモードの設定
-//========================================
-void SetGameMode(GAMEMODE gamemode)
-{
-	g_gamemode = gamemode;
+	g_nCounterGameFlag = nCounter;
 }
 
 //========================================
 //	ゲームの状態の取得
 //========================================
-GAMESTATE GetGameState(void)
+GAMEFLAG GetGameFlag(void)
 {
-	return g_gameState;
+	return g_gameFlag;
 }
 
 //========================================
 //	次のゲームの状態の取得
 //========================================
-GAMESTATE GetNextGameState(void)
+GAMEFLAG GetNextGameFlag(void)
 {
-	return g_nextgameState;
-}
-
-//========================================
-//	ゲームモードの取得
-//========================================
-GAMEMODE GetGameMode(void)
-{
-	return g_gamemode;
+	return g_nextgameFlag;
 }
 
 //========================================

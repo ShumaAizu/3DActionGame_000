@@ -10,27 +10,331 @@ SCRIPT
 #------------------------------------------------------------------------------
 # 読み込むモデル数
 #------------------------------------------------------------------------------
-NUM_MODEL = 22
+NUM_MODEL = 17
 
 #------------------------------------------------------------------------------
 # 読み込むモデルファイル名
 #------------------------------------------------------------------------------
-MODEL_FILENAME = data/MODEL/Iceberg000.x				# [0]
-MODEL_FILENAME = data/MODEL/snow001.x				# [0]
-MODEL_FILENAME = data/MODEL/field001.x				# [0]
+MODEL_FILENAME = data/MODEL/Iceberg000.x			# [0]
+MODEL_FILENAME = data/MODEL/snow001.x				# [1]
+MODEL_FILENAME = data/MODEL/field001.x				# [2]
+MODEL_FILENAME = data/MODEL/field003.x				# [3]
+MODEL_FILENAME = data/MODEL/snowflake000.x			# [4]
+MODEL_FILENAME = data/MODEL/field004.x				# [5]
+MODEL_FILENAME = data/MODEL/snow002.x				# [6]
+MODEL_FILENAME = data/MODEL/field005.x				# [7]
+MODEL_FILENAME = data/MODEL/Iceberg002.x			# [8]
+MODEL_FILENAME = data/MODEL/Iceberg003.x			# [9]
+MODEL_FILENAME = data/MODEL/Iceberg004.x			# [10]
+MODEL_FILENAME = data/MODEL/Iceberg005.x			# [11]
+MODEL_FILENAME = data/MODEL/block000.x				# [12]
+MODEL_FILENAME = data/MODEL/snow003.x				# [13]
+MODEL_FILENAME = data/MODEL/snow004.x				# [14]
+MODEL_FILENAME = data/MODEL/block001.x				# [15]
+MODEL_FILENAME = data/MODEL/block002.x				# [16]
+MODEL_FILENAME = data/MODEL/field006.x				# [17]
+MODEL_FILENAME = data/MODEL/field007.x				# [18]
 
 #------------------------------------------------------------------------------
 # 表示するモデルの配置情報
 #------------------------------------------------------------------------------
 
 #-------------------------------------
-# [0]
+# [0] 氷山1
 #-------------------------------------
+
 MODELSET
-	TYPE = 0				# 種類
-	POS = -400 650 860		# 位置
-	ROT = 0 0 0				# 向き
+	POS = 0.0 -225.0 2025.0		# 位置
+	ROT = 0.0 0.18 0.0			# 向き
+	TYPE = 0					# 種類
+	COLLISION = 1				# 当たり判定有無
 END_MODELSET
 
+MODELSET
+	POS = -2800.0 -75.0 2650.0	# 位置
+	ROT = 0.0 0.18 0.0			# 向き
+	TYPE = 0					# 種類
+	COLLISION = 1				# 当たり判定有無
+END_MODELSET
+
+MODELSET
+	POS = 3550.0 -210.0 -710.0	# 位置
+	ROT = 0.0 0.88 0.0			# 向き
+	TYPE = 0					# 種類
+	COLLISION = 1				# 当たり判定有無
+END_MODELSET
+
+#-------------------------------------
+# [1] 雪1
+#-------------------------------------
+
+MODELSET
+	POS = 0.0 0.0 500.0		# 位置
+	ROT = 0.0 0.0 0.0		# 向き
+	TYPE = 1				# 種類
+	COLLISION = 0			# 当たり判定有無
+	MESH_FILENAME = data/MESH/mesh_snow001.bin
+END_MODELSET
+
+MODELSET
+	POS = -765.0 192.5 97.5		# 位置
+	ROT = 0.0 -1.20 0.0			# 向き
+	TYPE = 1					# 種類
+	COLLISION = 0				# 当たり判定有無
+	MESH_FILENAME = data/MESH/mesh_snow001.bin
+END_MODELSET
+
+MODELSET
+	POS = 600.0 220.0 -505.0	# 位置
+	ROT = 0.0 0.80 0.0			# 向き
+	TYPE = 1					# 種類
+	COLLISION = 0				# 当たり判定有無
+	MESH_FILENAME = data/MESH/mesh_snow001.bin
+END_MODELSET
+
+MODELSET
+	POS = -846.0 -64.5 1381.0		# 位置
+	ROT = 0.0 -1.67 0.0				# 向き
+	TYPE = 1						# 種類
+	COLLISION = 0					# 当たり判定有無
+	MESH_FILENAME = data/MESH/mesh_snow001.bin
+END_MODELSET
+
+#-------------------------------------
+# [3] フィールド3
+#-------------------------------------
+
+MODELSET
+	POS = -3000.0 -60.0 400.0		# 位置
+	ROT = 0.0 0.0 0.0				# 向き
+	TYPE = 3						# 種類
+	COLLISION = 0					# 当たり判定有無
+	MESH_FILENAME = data/MESH/mesh_field003.bin
+END_MODELSET
+
+MODELSET
+	POS = -1000.0 0.0 -2250.0		# 位置
+	ROT = 0.0 -0.77 0.0				# 向き
+	TYPE = 3						# 種類
+	COLLISION = 0					# 当たり判定有無
+	MESH_FILENAME = data/MESH/mesh_field003.bin
+END_MODELSET
+
+MODELSET
+	POS = 2015.0 -30.0 -1665.0		# 位置
+	ROT = 0.0 0.0 0.0		# 向き
+	TYPE = 3				# 種類
+	COLLISION = 0			# 当たり判定有無
+	MESH_FILENAME = data/MESH/mesh_field003.bin
+END_MODELSET
+
+
+#-------------------------------------
+# [7] フィールド5
+#-------------------------------------
+MODELSET
+	POS = 0.0 -40.0 0.0		# 位置
+	ROT = 0.0 0.0 0.0		# 向き
+	TYPE = 7				# 種類
+	COLLISION = 0			# 当たり判定有無
+	MESH_FILENAME = data/MESH/mesh_field005.bin
+END_MODELSET
+
+#-------------------------------------
+# [8] 氷山2
+#-------------------------------------
+
+MODELSET
+	POS = -1925.0 -200.0 1545.0	# 位置
+	ROT = 0.0 0.18 0.0			# 向き
+	TYPE = 8					# 種類
+	COLLISION = 1				# 当たり判定有無
+END_MODELSET
+
+MODELSET
+	POS = -1425.0 -120.0 2800.0	# 位置
+	ROT = 0.0 0.18 0.0			# 向き
+	TYPE = 8					# 種類
+	COLLISION = 1				# 当たり判定有無
+END_MODELSET
+
+MODELSET
+	POS = 2395.0 -175.0 15.0	# 位置
+	ROT = 0.0 2.0 0.0			# 向き
+	TYPE = 8					# 種類
+	COLLISION = 1				# 当たり判定有無
+END_MODELSET
+
+#-------------------------------------
+# [9] 氷山3
+#-------------------------------------
+
+MODELSET
+	POS = -2515.0 -90.0 -1075.0	# 位置
+	ROT = 0.0 -0.10 0.0			# 向き
+	TYPE = 9					# 種類
+	COLLISION = 1				# 当たり判定有無
+END_MODELSET
+
+MODELSET
+	POS = 630.0 -15.0 -3385.0	# 位置
+	ROT = 0.0 -2.80 0.0			# 向き
+	TYPE = 9					# 種類
+	COLLISION = 1				# 当たり判定有無
+END_MODELSET
+
+#-------------------------------------
+# [11] 氷山5
+#-------------------------------------
+
+MODELSET
+	POS = 2725.0 85.0 -1355.0	# 位置
+	ROT = 0.0 -1.02 0.0			# 向き
+	TYPE = 11					# 種類
+	COLLISION = 1				# 当たり判定有無
+END_MODELSET
+
+#-------------------------------------
+# [12] ブロック
+#-------------------------------------
+
+MODELSET
+	POS = 1315.0 70.0 2885.0	# 位置
+	ROT = 0.0 0.87 0.0			# 向き
+	TYPE = 12					# 種類
+	COLLISION = 1				# 当たり判定有無
+END_MODELSET
+
+MODELSET
+	POS = 2555.0 195.0 -2685.0	# 位置
+	ROT = 0.0 -1.60 0.0			# 向き
+	TYPE = 12					# 種類
+	COLLISION = 1				# 当たり判定有無
+END_MODELSET
+
+#-------------------------------------
+# [13] 雪2
+#-------------------------------------
+
+MODELSET
+	POS = 50.0 -35.0 175.0	# 位置
+	ROT = 0.0 1.30 0.0			# 向き
+	TYPE = 13					# 種類
+	MESHTYPE = 1				# メッシュの種類
+	COLLISION = 0				# 当たり判定有無
+	MESH_FILENAME = data/MESH/mesh_snow003.bin
+END_MODELSET
+
+#-------------------------------------
+# [14] 雪3
+#-------------------------------------
+
+MODELSET
+	POS = -321.0 -20.0 -475.0	# 位置
+	ROT = 0.0 1.30 0.0			# 向き
+	TYPE = 14					# 種類
+	MESHTYPE = 1				# メッシュの種類
+	COLLISION = 0				# 当たり判定有無
+	MESH_FILENAME = data/MESH/mesh_snow004.bin
+END_MODELSET
+
+MODELSET
+	POS = 710.0 -15.0 70.0	# 位置
+	ROT = 0.0 0.70 0.0			# 向き
+	TYPE = 14					# 種類
+	MESHTYPE = 1				# メッシュの種類
+	COLLISION = 0				# 当たり判定有無
+	MESH_FILENAME = data/MESH/mesh_snow004.bin
+END_MODELSET
+
+#-------------------------------------
+# [15] ブロック2
+#-------------------------------------
+
+MODELSET
+	POS = 520.0 -32.5 666.0	# 位置
+	ROT = 0.0 0.42 0.0			# 向き
+	TYPE = 15					# 種類
+	MESHTYPE = 0				# メッシュの種類
+	COLLISION = 0				# 当たり判定有無
+	MESH_FILENAME = data/MESH/mesh_block001.bin
+END_MODELSET
+
+MODELSET
+	POS = 3185.0 -65.5 900.0	# 位置
+	ROT = 0.0 -0.65 0.0			# 向き
+	TYPE = 15					# 種類
+	MESHTYPE = 0				# メッシュの種類
+	COLLISION = 0				# 当たり判定有無
+	MESH_FILENAME = data/MESH/mesh_block001.bin
+END_MODELSET
+
+#-------------------------------------
+# [16] ブロック3
+#-------------------------------------
+MODELSET
+	POS = -715.0 115.0 115.0	# 位置
+	ROT = 0.0 0.87 0.0			# 向き
+	TYPE = 16					# 種類
+	COLLISION = 1				# 当たり判定有無
+END_MODELSET
+
+MODELSET
+	POS = 600.0 135.0 -515.0	# 位置
+	ROT = 0.0 -1.98 0.0			# 向き
+	TYPE = 16					# 種類
+	COLLISION = 1				# 当たり判定有無
+END_MODELSET
+
+MODELSET
+	POS = 2825.0 100.0 2285.0	# 位置
+	ROT = 0.0 -1.40 0.0			# 向き
+	TYPE = 16					# 種類
+	COLLISION = 1				# 当たり判定有無
+END_MODELSET
+
+#-------------------------------------
+# [17] フィールド6
+#-------------------------------------
+MODELSET
+	POS = -820.0 -55.0 1125.0	# 位置
+	ROT = 0.0 0.40 0.0			# 向き
+	TYPE = 17					# 種類
+	COLLISION = 0				# 当たり判定有無
+	MESHTYPE = 0				# メッシュの種類
+	MESH_FILENAME = data/MESH/mesh_field006.bin
+END_MODELSET
+
+MODELSET
+	POS = -825.0 -55.0 1375.0	# 位置
+	ROT = 0.0 2.70 0.0			# 向き
+	TYPE = 17					# 種類
+	COLLISION = 0				# 当たり判定有無
+	MESHTYPE = 0				# メッシュの種類
+	MESH_FILENAME = data/MESH/mesh_field006.bin
+END_MODELSET
+
+#-------------------------------------
+# [18] フィールド7
+#-------------------------------------
+MODELSET
+	POS = -1005.0 -55.0 1750.0	# 位置
+	ROT = 0.0 -0.40 0.0			# 向き
+	TYPE = 18					# 種類
+	COLLISION = 0				# 当たり判定有無
+	MESHTYPE = 0				# メッシュの種類
+	MESH_FILENAME = data/MESH/mesh_field007.bin
+END_MODELSET
+
+#-------------------------------------
+# タイトルで置くやつ
+#-------------------------------------
+MODELSET
+	POS = -1745.0 600.0 -3925.0		# 位置
+	ROT = 0.0 0.0 0.0				# 向き
+	TYPE = 5						# 種類
+	COLLISION = 0					# 当たり判定有無
+	MODE = 0						# モード
+END_MODELSET
 
 END_SCRIPT

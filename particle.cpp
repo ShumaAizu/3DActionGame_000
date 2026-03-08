@@ -88,8 +88,9 @@ void UpdateParticle(void)
 			{
 				pos = g_aParticle[nCntParticle].pos;
 
-				//pos.x += (float)(rand() % 3000) / 100.0f + 1.0f;
-				//pos.y += (float)(rand() % 3000) / 100.0f + 1.0f;
+				pos.x += (float)(rand() % 3000) / 100.0f + 1.0f;
+				pos.y += (float)(rand() % 3000) / 100.0f + 1.0f;
+				pos.z += (float)(rand() % 3000) / 100.0f + 1.0f;
 
 				nStartAngle = (int)(g_aParticle[nCntParticle].fStartAngle * 100) + 1;
 				nEndAngle = (int)(g_aParticle[nCntParticle].fEndAngle * 100);
@@ -107,10 +108,10 @@ void UpdateParticle(void)
 					fAngle -= D3DX_PI * 2;
 				}
 
-				fMove = (float)(rand() % 500) / 100.0f + 0.5f;
+				fMove = (float)(rand() % 1000) / 100.0f + 5.0f;
 
 				move.x = sinf(fAngle) * fMove;
-				move.y = cosf(fAngle) * fMove;
+				move.z = cosf(fAngle) * fMove;
 
 				switch (g_aParticle[nCntParticle].type)
 				{
@@ -159,7 +160,6 @@ void DrawParticle(void)
 //====================================
 void SetParticle(D3DXVECTOR3 pos, D3DXCOLOR col, float fRadius, float fRadiusDecrease, float fAlphaDecrease, int nLife, float fStartAngle, float fEndAngle)
 {
-
 	for (int nCntParticle = 0; nCntParticle < MAX_PARTICLE; nCntParticle++)
 	{
 		if (g_aParticle[nCntParticle].bUse == false)

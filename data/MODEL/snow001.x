@@ -287,7 +287,7 @@ Mesh {
    0.500000;0.500000;0.500000;;
    0.000000;0.000000;0.000000;;
    TextureFilename {
-    "C:\\Users\\student\\Pictures\\Ç¢ÇÎÇ¢ÇÎëfçﬁ\\snow_000.png";
+    "data\\TEXTURE\\snow003.png";
    }
   }
  }

@@ -8,24 +8,25 @@
 #include "main.h"
 #include "item.h"
 #include "input.h"
+#include "particle.h"
+#include "sound.h"
 
 #include "debugproc.h"
 
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define MAX_ITEM		(128)			// アイテムの最大数
+#define MAX_ITEM		(16)			// アイテムの最大数
+#define ITEM_RADIUS		(45.0f)			// アイテムの半径
 
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
 Itemdata g_aitemdata[ITEMTYPE_MAX];	// アイテムデータの情報
 Item g_aitem[MAX_ITEM];				// アイテムの情報
-int g_nSelectItem;					// 選択中のアイテム
+ITEMTYPE g_CurrentItem;				// 今の所持アイテム
 int g_nNumItemData;					// アイテムデータ数
 int g_nNumItem;						// 現在のアイテム数
-int g_nSelectItemType;				// 選択中の種類
-float g_fItemMove;					// アイテムの移動量
 
 //=============================================================================
 //	アイテムの初期化処理
@@ -40,14 +41,14 @@ void InitItem(void)
 		g_aitem[nCntItem].pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 		g_aitem[nCntItem].rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 		g_aitem[nCntItem].bCollision = true;
+		g_aitem[nCntItem].fRadius = ITEM_RADIUS;
+		g_aitem[nCntItem].fAngle = 0.0f;
 		g_aitem[nCntItem].bUse = false;
 	}
 
-	g_nNumItem = -1;
+	g_CurrentItem = ITEMTYPE_MAX;
+	g_nNumItem = 0;
 	g_nNumItemData = 0;
-	g_nSelectItem = -1;
-	g_nSelectItemType = 0;
-	g_fItemMove = 1.0f;
 }
 
 //=============================================================================
@@ -105,9 +106,6 @@ void DrawItem(void)
 		// ワールドマトリックスの初期化
 		D3DXMatrixIdentity(&pItem->mtxWorld);
 
-		D3DXMatrixScaling(&mtxScale, pItem->scale.y, pItem->scale.x, pItem->scale.z);
-		D3DXMatrixMultiply(&pItem->mtxWorld, &pItem->mtxWorld, &mtxScale);
-
 		// 向きを反映
 		D3DXMatrixRotationYawPitchRoll(&mtxRot, pItem->rot.y, pItem->rot.x, pItem->rot.z);
 		D3DXMatrixMultiply(&pItem->mtxWorld, &pItem->mtxWorld, &mtxRot);
@@ -147,166 +145,55 @@ void DrawItem(void)
 //=============================================================================
 void UpdateItem(void)
 {
-	//if (GetKeyboardTrigger(DIK_F2) == true)
-	//{
-	//	g_nSelectItem = (g_nSelectItem + 1) % (g_nNumItem + 1);
-	//}
+	Item* pItem = &g_aitem[0];						// 先頭アドレス
 
-	//if (GetKeyboardTrigger(DIK_F3) == true)
-	//{
-	//	g_nSelectType = (g_nSelectType + 1) % ITEMTYPE_MAX;
-	//}
+	for (int nCntItem = 0; nCntItem < MAX_ITEM; nCntItem++, pItem++)
+	{
+		if (pItem->bUse == false)
+		{
+			continue;
+		}
 
-	//if (GetKeyboardRepeat(DIK_F4) == true)
-	//{
-	//	g_fItemMove += -1.0f;
-	//}
+		pItem->fAngle += ITEM_FLOATINGSPEED;
 
-	//if (GetKeyboardRepeat(DIK_F5) == true)
-	//{
-	//	g_fItemMove += 1.0f;
-	//}
+		pItem->fAngle = AngleNormalize(pItem->fAngle);
 
-	//if (GetKeyboardTrigger(DIK_RETURN) == true)
-	//{
-	//	SetItem(INIT_D3DXVEC3, INIT_D3DXVEC3, D3DXVECTOR3(1.0f, 1.0f, 1.0f), (ITEMTYPE)g_nSelectType);
-	//}
+		pItem->pos.y += sinf(pItem->fAngle) * 0.5f;
 
-	//if (GetKeyboardPress(DIK_T) == true)
-	//{
-	//	g_aitem[g_nSelectItem].pos.z += g_fItemMove;
-	//}
+		pItem->rot.y += ITEM_FLOATINGSPEED;
 
-	//if (GetKeyboardPress(DIK_F) == true)
-	//{
-	//	g_aitem[g_nSelectItem].pos.x += -g_fItemMove;
-	//}
+		pItem->rot.y = AngleNormalize(pItem->rot.y);
 
-	//if (GetKeyboardPress(DIK_G) == true)
-	//{
-	//	g_aitem[g_nSelectItem].pos.z += -g_fItemMove;
-	//}
-
-	//if (GetKeyboardPress(DIK_H) == true)
-	//{
-	//	g_aitem[g_nSelectItem].pos.x += g_fItemMove;
-	//}
-
-	//if (GetKeyboardPress(DIK_X) == true)
-	//{
-	//	g_aitem[g_nSelectItem].pos.y += g_fItemMove;
-	//}
-
-	//if (GetKeyboardPress(DIK_V) == true)
-	//{
-	//	g_aitem[g_nSelectItem].pos.y += -g_fItemMove;
-	//}
-
-	//if (GetKeyboardPress(DIK_Y) == true)
-	//{
-	//	g_aitem[g_nSelectItem].rot.y += 0.1f;
-	//	g_aitem[g_nSelectItem].rot.y = AngleNormalize(g_aitem[g_nSelectItem].rot.y);
-	//}
-
-	//if (GetKeyboardPress(DIK_R) == true)
-	//{
-	//	g_aitem[g_nSelectItem].rot.y += -0.1f;
-	//	g_aitem[g_nSelectItem].rot.y = AngleNormalize(g_aitem[g_nSelectItem].rot.y);
-	//}
-
-	//if (GetKeyboardPress(DIK_UPARROW) == true)
-	//{
-	//	g_aitem[g_nSelectItem].scale.x += 0.1f;
-	//	g_aitem[g_nSelectItem].scale.y += 0.1f;
-	//	g_aitem[g_nSelectItem].scale.z += 0.1f;
-	//}
-
-	//if (GetKeyboardPress(DIK_DOWNARROW) == true)
-	//{
-	//	g_aitem[g_nSelectItem].scale.x += -0.1f;
-	//	g_aitem[g_nSelectItem].scale.y += -0.1f;
-	//	g_aitem[g_nSelectItem].scale.z += -0.1f;
-	//}
-
-	//PrintDebugProc("選択アイテム = { %d }\n", g_nSelectItem);
-	//PrintDebugProc("アイテム数 = { %d }\n", g_nNumItem);
-	//PrintDebugProc("選択タイプ = { %d }\n", g_nSelectType);
-	//PrintDebugProc("アイテム移動量 = { %.2f }\n", g_fItemMove);
-	//PrintDebugProc("ItemPos = { %.2f %.2f %.2f }\n", g_aitem[g_nSelectItem].pos.x, g_aitem[g_nSelectItem].pos.y, g_aitem[g_nSelectItem].pos.z);
-	//PrintDebugProc("ItemRot = { %.2f %.2f %.2f }\n", g_aitem[g_nSelectItem].rot.x, g_aitem[g_nSelectItem].rot.y, g_aitem[g_nSelectItem].rot.z);
-	//PrintDebugProc("ItemScale = { %.2f %.2f %.2f }\n", g_aitem[g_nSelectItem].scale.x, g_aitem[g_nSelectItem].scale.y, g_aitem[g_nSelectItem].scale.z);
+		//SetParticle(pItem->pos, COLOR_WHITE, 50.0f, 0.0025f, 0.0025f, 5, D3DX_PI, -D3DX_PI);
+	}
 }
 
 //=============================================================================
 //	アイテムの当たり判定処理
 //=============================================================================
-void CollisionItem(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTOR3 * pMove, D3DXVECTOR3 vtxMin, D3DXVECTOR3 vtxMax)
+void CollisionItem(D3DXVECTOR3* pPos, float fRadius)
 {
-	Item* pItem = &g_aitem[0];					// 先頭アドレス
-	D3DXMATRIX mtxRot, mtxTrans, mtxScale;			// 計算用マトリックス
-	D3DXVECTOR3 posMax, posMin;						// 
-	D3DXVECTOR3 posA, posB, posC, posD;
+	Item* pItem = &g_aitem[0];						// 先頭アドレス
+
+	float fDiff = 0.0f;
 
 	for (int nCntItem = 0; nCntItem < MAX_ITEM; nCntItem++, pItem++)
 	{
-		if (g_aitem[nCntItem].bUse == false)
+		if (pItem->bUse == false)
 		{// 使用していなかったら戻る
 			continue;
 		}
 
 		Itemdata* pItemData = &g_aitemdata[pItem->itemtype];	// アイテムタイプ
 
-		posA = D3DXVECTOR3(pItemData->vtxMin.x, 0.0f, pItemData->vtxMax.z);
-		posB = D3DXVECTOR3(pItemData->vtxMax.x, 0.0f, pItemData->vtxMax.z);
-		posC = D3DXVECTOR3(pItemData->vtxMax.x, 0.0f, pItemData->vtxMin.z);
-		posD = D3DXVECTOR3(pItemData->vtxMin.x, 0.0f, pItemData->vtxMin.z);
+		fDiff = powf(pItem->pos.x - pPos->x, 2) + powf(pItem->pos.y - pPos->y, 2) + powf(pItem->pos.z - pPos->z, 2);
 
-		// ワールドマトリックスの初期化
-		D3DXMatrixIdentity(&pItem->mtxWorld);
-
-		D3DXMatrixScaling(&mtxScale, pItem->scale.y, pItem->scale.x, pItem->scale.z);
-		D3DXMatrixMultiply(&pItem->mtxWorld, &pItem->mtxWorld, &mtxScale);
-
-		// 向きを反映
-		D3DXMatrixRotationYawPitchRoll(&mtxRot, pItem->rot.y, pItem->rot.x, pItem->rot.z);
-		D3DXMatrixMultiply(&pItem->mtxWorld, &pItem->mtxWorld, &mtxRot);
-
-		// 位置を反映
-		D3DXMatrixTranslation(&mtxTrans, pItem->pos.x, pItem->pos.y, pItem->pos.z);
-		D3DXMatrixMultiply(&pItem->mtxWorld, &pItem->mtxWorld, &mtxTrans);
-
-		// 位置と向きを反映した頂点座標を入れる
-		D3DXVec3TransformCoord(&posA, &posA, &pItem->mtxWorld);
-		D3DXVec3TransformCoord(&posB, &posB, &pItem->mtxWorld);
-		D3DXVec3TransformCoord(&posC, &posC, &pItem->mtxWorld);
-		D3DXVec3TransformCoord(&posD, &posD, &pItem->mtxWorld);
-
-		// 当たり判定
-		if (pItem->bCollision == true)
+		if (fDiff <= powf(fRadius + pItem->fRadius, 2))
 		{
-			CrossCollision(pPos, pPosOld, posB, posA, true, false);
-			CrossCollision(pPos, pPosOld, posC, posB, true, false);
-			CrossCollision(pPos, pPosOld, posD, posC, true, false);
-			CrossCollision(pPos, pPosOld, posA, posD, true, false);
-		}
-
-		// アイテムの範囲内か判定
-		if (pPos->x + vtxMax.x > g_aitem[nCntItem].pos.x + g_aitemdata[g_aitem[nCntItem].itemtype].vtxMin.x && pPos->x + vtxMin.x < g_aitem[nCntItem].pos.x + g_aitemdata[g_aitem[nCntItem].itemtype].vtxMax.x &&
-			pPos->y + vtxMax.y > g_aitem[nCntItem].pos.y +  g_aitemdata[g_aitem[nCntItem].itemtype].vtxMin.y && pPos->y + vtxMin.y < g_aitem[nCntItem].pos.y +  g_aitemdata[g_aitem[nCntItem].itemtype].vtxMax.y &&
-			pPos->z + vtxMax.z > g_aitem[nCntItem].pos.z +  g_aitemdata[g_aitem[nCntItem].itemtype].vtxMin.z && pPos->z + vtxMin.z < g_aitem[nCntItem].pos.z +  g_aitemdata[g_aitem[nCntItem].itemtype].vtxMax.z)
-		{
-
-			// 上から
-			if (pPosOld->y + vtxMin.y >= g_aitem[nCntItem].pos.y + g_aitemdata[g_aitem[nCntItem].itemtype].vtxMax.y)
-			{
-				pPos->y = g_aitem[nCntItem].pos.y + g_aitemdata[g_aitem[nCntItem].itemtype].vtxMax.y - vtxMin.y;
-			}
-
-			// 下から
-			if (pPosOld->y + vtxMax.y <= g_aitem[nCntItem].pos.y + g_aitemdata[g_aitem[nCntItem].itemtype].vtxMin.y)
-			{
-				pPos->y = g_aitem[nCntItem].pos.y + g_aitemdata[g_aitem[nCntItem].itemtype].vtxMin.y - vtxMax.y;
-			}
+			SetJoypadVibration(10000, 16000, 30);
+			PlaySound(SOUND_LABEL_GETSE000);
+			g_CurrentItem = pItem->itemtype;
+			pItem->bUse = false;
 		}
 	}
 }
@@ -314,7 +201,7 @@ void CollisionItem(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTOR3 * pMove,
 //=============================================================================
 //	アイテムの設定処理
 //=============================================================================
-void SetItem(D3DXVECTOR3 pos, D3DXVECTOR3 rot, D3DXVECTOR3 scale, ITEMTYPE itemtype)
+void SetItem(D3DXVECTOR3 pos, D3DXVECTOR3 rot, ITEMTYPE itemtype, bool bCollision)
 {
 	for (int nCntItem = 0; nCntItem < MAX_ITEM; nCntItem++)
 	{
@@ -323,16 +210,31 @@ void SetItem(D3DXVECTOR3 pos, D3DXVECTOR3 rot, D3DXVECTOR3 scale, ITEMTYPE itemt
 			continue;
 		}
 
-		g_nNumItem++;
-		g_nSelectItem++;
-
 		g_aitem[nCntItem].pos = pos;
 		g_aitem[nCntItem].rot = rot;
-		g_aitem[nCntItem].scale = scale;
 		g_aitem[nCntItem].itemtype = itemtype;
+		g_aitem[nCntItem].bCollision = bCollision;
 		g_aitem[nCntItem].bUse = true;
+
+		g_nNumItem++;
 		break;
 	}
+}
+
+//=============================================================================
+//	アイテムの取得処理
+//=============================================================================
+ITEMTYPE GetItem(void)
+{
+	return g_CurrentItem;
+}
+
+//=============================================================================
+//	アイテムの設定処理
+//=============================================================================
+void SetCurrentItem(void)
+{
+	g_CurrentItem = ITEMTYPE_MAX;
 }
 
 //=============================================================================

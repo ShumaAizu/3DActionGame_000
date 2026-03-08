@@ -13,7 +13,9 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
+#define TITLE_SCRIPT		"data/SCRIPTS/title.txt"	// タイトル管理スクリプト
 #define GAME_SCRIPT			"data/SCRIPTS/game.txt"		// ゲーム管理スクリプト
+#define RESULT_SCRIPT		"data/SCRIPTS/result.txt"	// リザルト管理スクリプト
 #define STAGE_SCRIPT		"data/SCRIPTS/stage.txt"	// ステージ情報スクリプト
 #define OBJECT_SCRIPT		"data/SCRIPTS/object.txt"	// オブジェクト情報スクリプト
 

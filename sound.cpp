@@ -34,20 +34,19 @@ DWORD g_aSizeAudio[SOUND_LABEL_MAX] = {};					// オーディオデータサイズ
 // サウンドの情報
 SOUNDINFO g_aSoundInfo[SOUND_LABEL_MAX] =
 {
-	{"data/BGM/bgm000.wav", -1},				// BGM0
-	{"data/BGM/bgm001.wav", -1},				// BGM1
-	{"data/BGM/bgm002.wav", -1},				// BGM2
-	{"data/BGM/beep000.wav", -1},				// ビープ音
-	{"data/SE/jumpse000.wav", 0},				// ジャンプSE
-	{"data/SE/clickse000.wav", 0},				// クリックSE
-	{"data/SE/clearse000.wav", 0},				// クリアSE
-	{"data/SE/troubleshootingse000.wav", 0},	// トラブルシューティングSE
-	{"data/SE/pausese000.wav", 0},				// ポーズSE
-	{"data/SE/returnse000.wav", 0},				// 決定SE
-	{"data/SE/selectse000.wav", 0},				// 選択SE
-	{"data/SE/itemse000.wav", 0},				// アイテムSE
-	{"data/SE/enemyse000.wav", 0},				// 敵SE
-	{"data/SE/playerse000.wav", -1},			// プレイヤーSE
+	{"data/BGM/titlebgm000.wav", -1},		// タイトルBGM
+	{"data/BGM/tutorialbgm000.wav", -1},	// チュートリアルBGM
+	{"data/BGM/gamebgm000.wav", -1},		// ゲームBGM
+	{"data/BGM/resultbgm000.wav", -1},		// リザルトBGM
+	{"data/SE/walkSE000.wav", 0},			// 歩行SE
+	{"data/SE/jumpSE000.wav", 0},			// ジャンプSE
+	{"data/SE/selectSE000.wav", 0},			// 選択SE
+	{"data/SE/selectSE001.wav", 0},			// 選択決定SE
+	{"data/SE/fallSE000.wav", 0},			// 選択決定SE
+	{"data/SE/reactionSE000.wav", 0},		// リアクションSE
+	{"data/SE/butreactionSE001.wav", 0},	// バットリアクションSE
+	{"data/SE/getSE000.wav", 0},			// ゲット
+
 };
 
 //=============================================================================

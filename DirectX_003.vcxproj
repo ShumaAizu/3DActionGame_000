@@ -150,6 +150,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="bg.cpp" />
     <ClCompile Include="billboard.cpp" />
     <ClCompile Include="bullet.cpp" />
     <ClCompile Include="camera.cpp" />
@@ -161,6 +162,7 @@
     <ClCompile Include="game.cpp" />
     <ClCompile Include="input.cpp" />
     <ClCompile Include="item.cpp" />
+    <ClCompile Include="itemui.cpp" />
     <ClCompile Include="light.cpp" />
     <ClCompile Include="loadscript.cpp" />
     <ClCompile Include="main.cpp" />
@@ -182,15 +184,24 @@
     <ClCompile Include="player.cpp" />
     <ClCompile Include="ranking.cpp" />
     <ClCompile Include="rankingrank.cpp" />
+    <ClCompile Include="reaction.cpp" />
+    <ClCompile Include="request.cpp" />
     <ClCompile Include="result.cpp" />
     <ClCompile Include="resultmenu.cpp" />
+    <ClCompile Include="resultui.cpp" />
     <ClCompile Include="shadow.cpp" />
     <ClCompile Include="snow.cpp" />
     <ClCompile Include="sound.cpp" />
+    <ClCompile Include="thread.cpp" />
+    <ClCompile Include="time.cpp" />
     <ClCompile Include="title.cpp" />
+    <ClCompile Include="titlelogo.cpp" />
+    <ClCompile Include="titlemenu.cpp" />
+    <ClCompile Include="tutorial.cpp" />
     <ClCompile Include="wall.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="bg.h" />
     <ClInclude Include="billboard.h" />
     <ClInclude Include="bullet.h" />
     <ClInclude Include="camera.h" />
@@ -202,6 +213,7 @@
     <ClInclude Include="game.h" />
     <ClInclude Include="input.h" />
     <ClInclude Include="item.h" />
+    <ClInclude Include="itemui.h" />
     <ClInclude Include="light.h" />
     <ClInclude Include="loadscript.h" />
     <ClInclude Include="main.h" />
@@ -220,12 +232,20 @@
     <ClInclude Include="player.h" />
     <ClInclude Include="ranking.h" />
     <ClInclude Include="rankingrank.h" />
+    <ClInclude Include="reaction.h" />
+    <ClInclude Include="request.h" />
     <ClInclude Include="result.h" />
     <ClInclude Include="resultmenu.h" />
+    <ClInclude Include="resultui.h" />
     <ClInclude Include="shadow.h" />
     <ClInclude Include="snow.h" />
     <ClInclude Include="sound.h" />
+    <ClInclude Include="thread.h" />
+    <ClInclude Include="time.h" />
     <ClInclude Include="title.h" />
+    <ClInclude Include="titlelogo.h" />
+    <ClInclude Include="titlemenu.h" />
+    <ClInclude Include="tutorial.h" />
     <ClInclude Include="wall.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

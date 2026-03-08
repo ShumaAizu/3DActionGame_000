@@ -1,0 +1,73 @@
+#==============================================================================
+#
+# 3Dアクションゲームオブジェクトファイル [resultobject.txt]
+# Author : SHUMA AIZU
+#
+#==============================================================================
+
+SCRIPT
+
+#------------------------------------------------------------------------------
+#	仲間の情報
+#------------------------------------------------------------------------------
+
+MOTIONSCRIPT = data/SCRIPTS/penguin_motion000.txt 1
+MOTIONSCRIPT = data/SCRIPTS/penguin_motion001.txt 1
+MOTIONSCRIPT = data/SCRIPTS/snowman_motion.txt 1
+
+RESULTINFO
+	POS = -50.0 -6.25 15.0
+	ROT = 0.0 0.0 0.0
+END_RESULTINFO
+
+RESULTINFO
+	POS = 50.0 -6.25 15.0
+	ROT = 0.0 0.0 0.0
+END_RESULTINFO
+
+RESULTINFO
+	POS = 15.0 -6.75 40.0
+	ROT = 0.0 0.0 0.0
+END_RESULTINFO
+
+RESULTINFO
+	POS = -15.0 -5.85 40.0
+	ROT = 0.0 0.0 0.0
+END_RESULTINFO
+
+RESULTINFO
+	POS = -65.0 -4.20 70.0
+	ROT = 0.0 0.0 0.0
+END_RESULTINFO
+
+RESULTINFO
+	POS = 45.0 0.25 90.0
+	ROT = 0.0 0.0 0.0
+END_RESULTINFO
+
+RESULTINFO
+	POS = 75.0 3.0 90.0
+	ROT = 0.0 0.0 0.0
+END_RESULTINFO
+
+RESULTINFO
+	POS = 0.0 0.0 0.0
+	ROT = 0.0 0.0 0.0
+END_RESULTINFO
+
+RESULTINFO
+	POS = 0.0 0.0 0.0
+	ROT = 0.0 0.0 0.0
+END_RESULTINFO
+
+RESULTINFO
+	POS = 0.0 0.0 0.0
+	ROT = 0.0 0.0 0.0
+END_RESULTINFO
+
+RESULTINFO
+	POS = 0.0 0.0 0.0
+	ROT = 0.0 0.0 0.0
+END_RESULTINFO
+
+END_SCRIPT

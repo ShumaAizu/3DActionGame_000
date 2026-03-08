@@ -14,9 +14,9 @@
 // マクロ定義
 //*****************************************************************************
 #define ITEM_WIDTH				(5.0f)			// アイテムの幅
-#define ITEM_HEIGHT			(5.0f)			// アイテムの高さ
-#define MAX_ITEMTEX			(16)			// 読み込むテクスチャの最大数
-#define MAX_IDX					(512)		// 
+#define ITEM_HEIGHT				(5.0f)			// アイテムの高さ
+#define MAX_ITEMTEX				(16)			// 読み込むテクスチャの最大数
+#define ITEM_FLOATINGSPEED		(0.04f)			// ぷかぷか速度
 
 //*****************************************************************************
 // アイテムの種類
@@ -55,7 +55,9 @@ typedef struct
 	D3DXVECTOR3 rot;							// 向き
 	D3DXVECTOR3 scale;							// 大きさ
 	D3DXMATRIX mtxWorld;						// ワールドマトリックス
-	ITEMTYPE itemtype;						// アイテムの種類
+	ITEMTYPE itemtype;							// アイテムの種類
+	float fRadius;								// 半径
+	float fAngle;								// ぷかぷかで使う角度
 	bool bCollision;							// 当たり判定するかどうか
 	bool bUse;									// 使用状態
 }Item;
@@ -67,9 +69,10 @@ void InitItem(void);
 void UninitItem(void);
 void UpdateItem(void);
 void DrawItem(void);
-void CollisionItem(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTOR3* pMove, D3DXVECTOR3 vtxMin, D3DXVECTOR3 vtxMax);
-void CollisionMeshItemTest(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld);
+void CollisionItem(D3DXVECTOR3* pPos, float fRadius);
 void LoadItemData(const char* pItemFile);
-void SetItem(D3DXVECTOR3 pos, D3DXVECTOR3 rot, D3DXVECTOR3 scale, ITEMTYPE itemtype);
+void SetItem(D3DXVECTOR3 pos, D3DXVECTOR3 rot, ITEMTYPE itemtype, bool bCollision);
+void SetCurrentItem(void);
+ITEMTYPE GetItem(void);
 
 #endif

@@ -233,7 +233,7 @@ void UpdateResultMenu(void)
 
 	if (g_bUpdate_ResultMenu == true)
 	{
-		if (GetJoypadRepeat(JOYKEY_RIGHT) == true || GetKeyboardRepeat(DIK_D) == true || GetJoypadStickRepeat(JOYSTICK_RIGHT) == true)
+		if (GetJoypadRepeat(JOYKEY_RIGHT) == true || GetKeyboardRepeat(DIK_D) == true || GetJoypadStickRepeat(JOYSTICKL_RIGHT) == true)
 		{ // 上方向キーが押されたら
 			// 現在のモードに合わせて変更
 			switch (g_resultMenu)
@@ -248,7 +248,7 @@ void UpdateResultMenu(void)
 			}
 		}
 
-		if (GetJoypadRepeat(JOYKEY_LEFT) == true || GetKeyboardRepeat(DIK_A) == true || GetJoypadStickRepeat(JOYSTICK_LEFT) == true)
+		if (GetJoypadRepeat(JOYKEY_LEFT) == true || GetKeyboardRepeat(DIK_A) == true || GetJoypadStickRepeat(JOYSTICKL_LEFT) == true)
 		{ // 下方向キーが押されたら
 			// 現在のモードに合わせて変更
 			switch (g_resultMenu)
@@ -289,11 +289,11 @@ void UpdateResultMenu(void)
 			{
 
 			case RESULTMENU_RESTART:
-				SetFade(MODE_RANKING, 0.025f, 0.025f);
+				SetFade(MODE_RANKING, COLOR_BLACK, 0.025f, 0.025f);
 				break;
 
 			case RESULTMENU_QUIT:
-				SetFade(MODE_TITLE, 0.025f, 0.025f);
+				SetFade(MODE_TITLE, COLOR_BLACK, 0.025f, 0.025f);
 				break;
 			}
 			

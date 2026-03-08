@@ -16,7 +16,10 @@
 #define NUM_KEY_MAX			(256)		//キーの最大数
 #define NUM_JOYSTROKE_MAX	(38)
 #define JOYKEYSTROKE_START	(0x5800)
-#define NUM_MOUSE_MAX		(3)				// ボタンの最大数
+#define NUM_MOUSE_MAX		(3)			// ボタンの最大数
+#define JOYSTICKVALUE_MAX	(32767)		// スティックの値の最大
+#define JOYSTICKVALUE_MIN	(-32768)	// スティックの値の最小
+#define CUSTOM_DEADZONE		(512)		// デッドゾーン
 
 //*****************************************************************************
 // ジョイパッドのキーの種類
@@ -47,10 +50,14 @@ typedef enum
 //*****************************************************************************
 typedef enum
 {
-	JOYSTICK_UP = 0,			// 上
-	JOYSTICK_DOWN,				// 下
-	JOYSTICK_LEFT,				// 左
-	JOYSTICK_RIGHT,				// 右
+	JOYSTICKL_UP = 0,			// 上(Lスティック)
+	JOYSTICKL_DOWN,				// 下(Lスティック)
+	JOYSTICKL_LEFT,				// 左(Lスティック)
+	JOYSTICKL_RIGHT,			// 右(Lスティック)
+	JOYSTICKR_UP,				// 上(Rスティック)
+	JOYSTICKR_DOWN,				// 下(Rスティック)
+	JOYSTICKR_LEFT,				// 左(Rスティック)
+	JOYSTICKR_RIGHT,			// 右(Rスティック)
 	JOYSTICK_MAX
 }JOYSTICK;
 
@@ -85,9 +92,11 @@ bool GetJoypadTrigger(JOYKEY key);
 bool GetJoypadRelease(JOYKEY key);
 bool GetJoypadRepeat(JOYKEY key);
 bool GetJoypadAny(void);
+bool GetJoypadStickLeft(float* pValueH, float* pValueV);
+bool GetJoypadStickLeft(float* pValueH, float* pValueV);
 bool GetJoypadStickPress(JOYSTICK stick);
 bool GetJoypadStickRepeat(JOYSTICK stick);
-void SetJoypadVibration(int nLVibration, int nRVibration, int nVibCounter);
+void SetJoypadVibration(WORD nLVibration, WORD nRVibration, int nVibCounter);
 XINPUT_STATE *GetJoypadState(void);
 bool GetJoypadStroke(WORD key);
 XINPUT_KEYSTROKE* GetJoypadStroke(void);

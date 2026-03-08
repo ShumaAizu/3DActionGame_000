@@ -13,8 +13,9 @@
 //*****************************************************************************
 typedef enum
 {
-	MODE_TITLE = 0,			// タイトル画面
-	MODE_SELECTSTAGE,		// ステージ選択画面
+	MODE_NONE = -1,			// なにもない
+	MODE_TITLE,				// タイトル画面
+	MODE_TUTORIAL,			// チュートリアル画面
 	MODE_GAME,				// ゲーム画面
 	MODE_RESULT,			// リザルト画面
 	MODE_RANKING,			// ランキング画面
@@ -31,5 +32,9 @@ MODE GetMode(void);
 float AngleNormalize(float fAngle);
 bool CrossCollision(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTOR3 posStart, D3DXVECTOR3 posEnd, bool bRetrun, bool bIn);
 void ToggleFullscreen(HWND hWnd);
+
+LPDIRECT3DDEVICE9 GetDevice(void);
+void EndDevice(void);
+bool GetIsMainThread(void);
 
 #endif

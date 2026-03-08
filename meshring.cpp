@@ -242,6 +242,9 @@ void UpdateMeshRing(void)
 //=============================================================================
 void SetMeshRing(D3DXVECTOR3 pos, D3DXVECTOR3 rot)
 {
+	// デバイスの取得
+	LPDIRECT3DDEVICE9 pDevice = GetDevice();
+
 	for (int nCntRing = 0; nCntRing < MAX_MESHRING; nCntRing++)
 	{
 		if (g_ameshring[nCntRing].bUse == false)

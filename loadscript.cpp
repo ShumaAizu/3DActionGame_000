@@ -11,6 +11,8 @@
 #include "friends.h"
 #include "model.h"
 #include "offsetmodel.h"
+#include "result.h"
+#include "item.h"
 
 //*****************************************************************************
 // マクロ定義
@@ -18,6 +20,7 @@
 #define MAX_STRING			(256)				// 読み込める文字列の最大
 #define LOAD_START			"SCRIPT"			// 読み込み
 #define LOAD_END			"END_SCRIPT"		// 終了
+#define LOAD_OBJECT			"OBJECTSCRIPT"		// オブジェクトスクリプト読み込み
 #define LOAD_PLAYER			"CHARACTERSET"		// プレイヤー情報読み込み
 #define LOAD_ENDPLAYER		"END_CHARACTERSET"	// プレイヤー情報読み込み終了
 #define LOAD_PARTS			"PARTSSET"			// パーツ情報読み込み
@@ -26,7 +29,9 @@
 #define LOAD_MOTIONINFO		"MOTIONSET"			// モーション情報読み込み
 #define LOAD_ENDMOTIONINFO	"END_MOTIONSET"		// モーション情報読み込み終了
 #define LOAD_NUMMODEL		"NUM_MODEL"			// モデル数読み込み
-#define LOAD_MODEL			"MODEL_FILENAME"	// モデル情報読み込み
+#define LOAD_MODEL			"MODEL_FILENAME"	// モデルファイル名読み込み
+#define LOAD_MESH			"MESH_FILENAME"		// メッシュファイル名読み込み
+#define LOAD_ITEM			"ITEM_FILENAME"		// アイテムファイル名読み込み
 #define LOAD_MOTIONLOOP		"LOOP"				// ループモーションか読み込み
 #define LOAD_NUMKEY			"NUM_KEY"			// キー数読み込み
 #define LOAD_KEYSET			"KEYSET"			// キー情報読み込み
@@ -34,19 +39,24 @@
 #define LOAD_FRAME			"FRAME"				// フレーム数読み込み
 #define LOAD_KEY			"KEY"				// キー読み込み
 #define LOAD_ENDKEY			"END_KEY"			// キー読み込み終了
+#define LOAD_MODE			"MODE"				// モード読み込み
 #define LOAD_POS			"POS"				// 位置読み込み
 #define LOAD_ROT			"ROT"				// 向き読み込み
 #define LOAD_TYPE			"TYPE"				// 種類読み込み
+#define LOAD_MESHTYPE		"MESHTYPE"			// メッシュの種類読み込み
 #define LOAD_EVENT			"EVENT"				// イベント読み込み
 #define LOAD_RADIUS			"RADIUS"			// 半径読み込み
+#define LOAD_COLLISION		"COLLISION"			// 当たり判定有無読み込み
 #define LOAD_INDEX			"INDEX"				// インデックス読み込み
 #define LOAD_PARENT			"PARENT"			// 親インデックス読み込み
 #define LOAD_MODELINFO		"MODELSET"			// モデル情報読み込み
 #define LOAD_ENDMODELINFO	"END_MODELSET"		// モデル情報読み込み終了
-#define LOAD_ITEM			"ITEMSET"			// アイテム情報読み込み
-#define LOAD_ENDITEM		"END_ITEMSET"		// アイテム情報読み込み終了
+#define LOAD_ITEMINFO		"ITEMSET"			// アイテム情報読み込み
+#define LOAD_ENDITEMINFO	"END_ITEMSET"		// アイテム情報読み込み終了
 #define LOAD_FRIENDS		"FRIENDSET"			// 仲間の情報読み込み
 #define LOAD_ENDFRIENDS		"END_FRIENDSET"		// 仲間の情報読み込み終了
+#define LOAD_RESULTINFO		"RESULTINFO"		// リザルトの仲間の情報読み込み
+#define LOAD_ENDRESULTINFO	"END_RESULTINFO"	// リザルトの仲間の情報読み込み終了
 
 //*****************************************************************************
 // マクロ定義
@@ -103,6 +113,15 @@ HRESULT LoadScript(const char* pScriptFileName)
 			(void)sscanf(pStart + 1, "%s %d", &aScriptPath, &type);
 
 			LoadMotionInfo(aScriptPath, (OBJECTTYPE)type);
+		}
+
+		if (strstr(aStr, LOAD_OBJECT) != NULL)
+		{
+			pStart = strchr(aStr, '=');
+
+			(void)sscanf(pStart + 1, "%s %d", &aScriptPath, &type);
+
+			LoadObject(aScriptPath);
 		}
 
 		if (strstr(aStr, LOAD_END))
@@ -452,10 +471,16 @@ HRESULT LoadStage(const char* pStageFileName)
 	char aStrCpy[MAX_STRING] = {};		   // 文字列複製(整理)
 	char* pStart = NULL;				   // 文字列開始位置
 	char aModelPath[FILENAME_MAX] = {};	   // モデルのファイル名読み込み
+	char aMeshPath[FILENAME_MAX] = {};	   // メッシュのファイル名読み込み
+	bool bSetMesh = false;				   // メッシュを作るかどうか
 	int nIdx = 0;						   // モデルのインデックス読み込み
 	int nParent = 0;					   // モデルの親インデックス読み込み
+	int nMode = MODE_MAX;				   // モード読み込み
 	D3DXVECTOR3 pos = {};				   // 位置読み込み
 	D3DXVECTOR3 rot = {};				   // 向き読み込み
+	int type = -1;						   // 種類読み込み
+	int meshtype = 0;					   // メッシュタイプ
+	int  nCollision = true;				   // 当たり判定するか
 	int nNumModel = 0;					   // モデル数読み込み
 
 	while (true)
@@ -503,6 +528,113 @@ HRESULT LoadStage(const char* pStageFileName)
 			LoadModelData(aModelPath);
 		}
 
+		if (strcmp(aStrCpy, LOAD_MODELINFO) == 0)
+		{
+			while (true)
+			{
+				memset(aStr, NULL, sizeof(aStr));				// 文字列クリア
+				memset(aStrCpy, NULL, sizeof(aStrCpy));			// コピーもクリア
+				(void)fgets(aStr, sizeof(aStr), pStageFile);	// 一列読み込み
+				LoadEnableString(&aStrCpy[0], &aStr[0]);		// 有効文字だけ抜き取って複製
+
+				if (strstr(aStr, LOAD_POS))
+				{
+					if ((pStart = strchr(aStr, '=')) == NULL)
+					{
+						continue;
+					}
+
+					(void)sscanf(pStart + 1, "%f %f %f", &pos.x, &pos.y, &pos.z);
+
+					continue;
+				}
+
+				if (strstr(aStr, LOAD_ROT))
+				{
+					if ((pStart = strchr(aStr, '=')) == NULL)
+					{
+						continue;
+					}
+
+					(void)sscanf(pStart + 1, "%f %f %f", &rot.x, &rot.y, &rot.z);
+
+					continue;
+				}
+
+				if (strncmp(aStrCpy, LOAD_TYPE, 4) == 0)
+				{
+					if ((pStart = strchr(aStr, '=')) == NULL)
+					{
+						continue;
+					}
+
+					(void)sscanf(pStart + 1, "%d", &type);
+
+					continue;
+				}
+
+				if (strncmp(aStrCpy, LOAD_MESHTYPE, sizeof(LOAD_MESHTYPE) - 1) == 0)
+				{
+					if ((pStart = strchr(aStr, '=')) == NULL)
+					{
+						continue;
+					}
+
+					(void)sscanf(pStart + 1, "%d", &meshtype);
+
+					continue;
+				}
+
+				if (strstr(aStr, LOAD_COLLISION))
+				{
+					if ((pStart = strchr(aStr, '=')) == NULL)
+					{
+						continue;
+					}
+
+					(void)sscanf(pStart + 1, "%d", &nCollision);
+
+					continue;
+				}
+
+				if (strncmp(aStrCpy, LOAD_MESH, sizeof(LOAD_MESH) - 1) == 0)
+				{
+					if ((pStart = strchr(aStr, '=')) == NULL)
+					{
+						continue;
+					}
+
+					(void)sscanf(pStart + 1, "%s", &aMeshPath);
+
+					bSetMesh = true;
+				}
+
+				if (strstr(aStr, LOAD_MODE))
+				{
+					if ((pStart = strchr(aStr, '=')) != NULL)
+					{
+						(void)sscanf(pStart + 1, "%d", &nMode);
+					}
+				}
+
+				if (strcmp(aStrCpy, LOAD_ENDMODELINFO) == 0)
+				{
+					if (bSetMesh == true)
+					{
+						SetModel(pos, rot, D3DXVECTOR3(1.0f, 1.0f, 1.0f), (MODELTYPE)type, (MODE)nMode, (bool)nCollision, aMeshPath, (MESHFIELDTYPE)meshtype);
+					}
+					else
+					{
+						SetModel(pos, rot, D3DXVECTOR3(1.0f, 1.0f, 1.0f), (MODELTYPE)type, (MODE)nMode, (bool)nCollision, NULL, (MESHFIELDTYPE)meshtype);
+					}
+					memset(aMeshPath, NULL, sizeof(aMeshPath));				// 文字列クリア
+					nMode = MODE_MAX;
+					bSetMesh = false;
+					break;
+				}
+			}
+		}
+
 		if (strcmp(aStrCpy, LOAD_END) == 0)
 		{
 			fclose(pStageFile);
@@ -531,11 +663,13 @@ HRESULT LoadObject(const char* pObjectFileName)
 	char* pStart = NULL;				   // 文字列開始位置
 	char aScriptPath[FILENAME_MAX] = {};   // スクリプトファイルパス
 	char aModelPath[FILENAME_MAX] = {};	   // モデルのファイル名読み込み
+	char aItemPath[FILENAME_MAX] = {};	   // アイテムのファイル名読み込み
 	int nIdx = 0;						   // モデルのインデックス読み込み
 	int nParent = 0;					   // モデルの親インデックス読み込み
 	D3DXVECTOR3 pos = {};				   // 位置読み込み
 	D3DXVECTOR3 rot = {};				   // 向き読み込み
 	int type = NULL;					   // 種類
+	int nCollision = NULL;				   // 当たり判定
 	int event = NULL;					   // イベント
 	int Objecttype = NULL;				   // オブジェクトの種類
 	int nNumModel = 0;					   // モデル数読み込み
@@ -653,6 +787,124 @@ HRESULT LoadObject(const char* pObjectFileName)
 			}
 		}
 
+		if (strstr(aStr, LOAD_ITEM))
+		{
+			if ((pStart = strchr(aStr, '=')) == NULL)
+			{
+				continue;
+			}
+
+			(void)sscanf(pStart + 1, "%s", &aItemPath);
+
+			LoadItemData(aItemPath);
+		}
+
+		if (strncmp(aStrCpy, LOAD_ITEMINFO, sizeof(LOAD_ITEMINFO) - 1) == 0)
+		{
+			while (true)
+			{
+				memset(aStr, NULL, sizeof(aStr));				// 文字列クリア
+				memset(aStrCpy, NULL, sizeof(aStrCpy));			// コピーもクリア
+				(void)fgets(aStr, sizeof(aStr), pObjectFile);	// 一列読み込み
+				LoadEnableString(&aStrCpy[0], &aStr[0]);		// 有効文字だけ抜き取って複製
+
+				if (strstr(aStr, LOAD_POS))
+				{
+					if ((pStart = strchr(aStr, '=')) == NULL)
+					{
+						continue;
+					}
+
+					(void)sscanf(pStart + 1, "%f %f %f", &pos.x, &pos.y, &pos.z);
+
+					continue;
+				}
+
+				if (strstr(aStr, LOAD_ROT))
+				{
+					if ((pStart = strchr(aStr, '=')) == NULL)
+					{
+						continue;
+					}
+
+					(void)sscanf(pStart + 1, "%f %f %f", &rot.x, &rot.y, &rot.z);
+
+					continue;
+				}
+
+				if (strstr(aStr, LOAD_TYPE))
+				{
+					if ((pStart = strchr(aStr, '=')) == NULL)
+					{
+						continue;
+					}
+
+					(void)sscanf(pStart + 1, "%d", &type);
+
+					continue;
+				}
+
+				if (strstr(aStr, LOAD_COLLISION))
+				{
+					if ((pStart = strchr(aStr, '=')) == NULL)
+					{
+						continue;
+					}
+
+					(void)sscanf(pStart + 1, "%d", &nCollision);
+
+					continue;
+				}
+
+				if (strcmp(aStrCpy, LOAD_ENDITEMINFO) == 0)
+				{
+					SetItem(pos, rot, (ITEMTYPE)type, (bool)nCollision);
+					break;
+				}
+			}
+		}
+
+		if (strcmp(aStrCpy, LOAD_RESULTINFO) == 0)
+		{
+			while (true)
+			{
+				memset(aStr, NULL, sizeof(aStr));				// 文字列クリア
+				memset(aStrCpy, NULL, sizeof(aStrCpy));			// コピーもクリア
+				(void)fgets(aStr, sizeof(aStr), pObjectFile);	// 一列読み込み
+				LoadEnableString(&aStrCpy[0], &aStr[0]);		// 有効文字だけ抜き取って複製
+
+				if (strstr(aStr, LOAD_POS))
+				{
+					if ((pStart = strchr(aStr, '=')) == NULL)
+					{
+						continue;
+					}
+
+					(void)sscanf(pStart + 1, "%f %f %f", &pos.x, &pos.y, &pos.z);
+
+					continue;
+				}
+
+				if (strstr(aStr, LOAD_ROT))
+				{
+					if ((pStart = strchr(aStr, '=')) == NULL)
+					{
+						continue;
+					}
+
+					(void)sscanf(pStart + 1, "%f %f %f", &rot.x, &rot.y, &rot.z);
+
+					continue;
+				}
+
+				if (strcmp(aStrCpy, LOAD_ENDRESULTINFO) == 0)
+				{
+					SetResultFriendsInfo(pos, rot);
+					break;
+				}
+			}
+		}
+
 		if (strcmp(aStrCpy, LOAD_END) == 0)
 		{
 			fclose(pObjectFile);
@@ -677,6 +929,11 @@ void LoadEnableString(char* aStrCpy, char* pStart)
 			continue;
 		}
 		else if (*pStart == '\t')
+		{
+			pStart++;
+			continue;
+		}
+		else if (*pStart == 0x32)
 		{
 			pStart++;
 			continue;

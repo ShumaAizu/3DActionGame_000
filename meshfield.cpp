@@ -20,8 +20,7 @@
 //*****************************************************************************
 #define MESHFIELD_SPLIT_WIDHT		(30 + 1)		// 横の分割数
 #define MESHFIELD_SPLIT_DEPTH		(30 + 1)		// 縦の分割数
-#define MAX_MESHFIELD				(5)				// メッシュフィールドの最大数
-#define MAX_VTX						(1000)
+#define MAX_MESHFIELD				(32)			// メッシュフィールドの最大数
 
 //*****************************************************************************
 // グローバル変数
@@ -44,6 +43,8 @@ void InitMeshField(void)
 	// デバイスの取得
 	LPDIRECT3DDEVICE9 pDevice = GetDevice();
 
+	PMESHFIELD pMeshField = &g_ameshfield[0];
+
 	for (int nCntTex = 0; nCntTex < MESHFIELDTYPE_MAX; nCntTex++)
 	{
 		// テクスチャの読み込み
@@ -52,19 +53,18 @@ void InitMeshField(void)
 			&g_apTextureMeshField[nCntTex]);
 	}
 
-	for (int nCntMeshField = 0; nCntMeshField < MAX_MESHFIELD; nCntMeshField++)
+	for (int nCntMeshField = 0; nCntMeshField < MAX_MESHFIELD; nCntMeshField++, pMeshField++)
 	{
-		g_ameshfield[nCntMeshField].pVtxBuff = NULL;
-		g_ameshfield[nCntMeshField].pIdxBuff = NULL;
-		g_ameshfield[nCntMeshField].pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-		g_ameshfield[nCntMeshField].rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-		g_ameshfield[nCntMeshField].type = MESHFIELDTYPE_MAX;
-		g_ameshfield[nCntMeshField].bUse = false;
+		pMeshField->pVtxBuff = NULL;
+		pMeshField->pIdxBuff = NULL;
+		pMeshField->pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+		pMeshField->rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+		pMeshField->type = MESHFIELDTYPE_MAX;
+		pMeshField->bUse = false;
 	}
 
-	SetMeshField(D3DXVECTOR3(-1500.0f, 0.0f, 1500.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), 300.0f, 300.0f, 10, 10, MESHFIELDTYPE_ICE);
+	//SetMeshField(D3DXVECTOR3(-1500.0f, -49.0f, 1500.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), 300.0f, 300.0f, 10, 10, MESHFIELDTYPE_ICE);
 	SetMeshField(D3DXVECTOR3(-5000.0f, -50.0f, 5000.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), 500.0f, 500.0f, 20, 20, MESHFIELDTYPE_SEA);
-	LoadMesh("data/SCRIPTS/test.bin");
 }
 
 //=============================================================================
@@ -72,6 +72,8 @@ void InitMeshField(void)
 //=============================================================================
 void UninitMeshField(void)
 {
+	PMESHFIELD pMeshField = &g_ameshfield[0];
+
 	for (int nCntTex = 0; nCntTex < MESHFIELDTYPE_MAX; nCntTex++)
 	{
 		// テクスチャの破棄
@@ -82,20 +84,20 @@ void UninitMeshField(void)
 		}
 	}
 	
-	for (int nCntMeshField = 0; nCntMeshField < MAX_MESHFIELD; nCntMeshField++)
+	for (int nCntMeshField = 0; nCntMeshField < MAX_MESHFIELD; nCntMeshField++, pMeshField++)
 	{
 		// 頂点バッファの破棄
-		if (g_ameshfield[nCntMeshField].pVtxBuff != NULL)
+		if (pMeshField->pVtxBuff != NULL)
 		{
-			g_ameshfield[nCntMeshField].pVtxBuff->Release();
-			g_ameshfield[nCntMeshField].pVtxBuff = NULL;
+			pMeshField->pVtxBuff->Release();
+			pMeshField->pVtxBuff = NULL;
 		}
 
 		// インデックスバッファの破棄
-		if (g_ameshfield[nCntMeshField].pIdxBuff != NULL)
+		if (pMeshField->pIdxBuff != NULL)
 		{
-			g_ameshfield[nCntMeshField].pIdxBuff->Release();
-			g_ameshfield[nCntMeshField].pIdxBuff = NULL;
+			pMeshField->pIdxBuff->Release();
+			pMeshField->pIdxBuff = NULL;
 		}
 	}
 }
@@ -112,7 +114,7 @@ void DrawMeshField(void)
 
 	for (int nCntMeshField = 0; nCntMeshField < MAX_MESHFIELD; nCntMeshField++, pMeshField++)
 	{
-		if (pMeshField->bUse == false)
+		if (pMeshField->bUse == false || pMeshField->bMesh == true)
 		{
 			continue;
 		}
@@ -158,32 +160,38 @@ void DrawMeshField(void)
 //=============================================================================
 void UpdateMeshField(void)
 {
-	MeshField* pMeshField = &g_ameshfield[0];
+	MeshField* pMeshField = &g_ameshfield[0];	// 先頭アドレスポインタ
 
 	for (int nCntMeshField = 0; nCntMeshField < MAX_MESHFIELD; nCntMeshField++, pMeshField++)
 	{
 		if (pMeshField->bUse == false)
-		{
+		{// 使っていなければ弾く
 			continue;
 		}
 
-		VERTEX_3D* pVtx;			// 頂点情報へのポインタ
+		if (pMeshField->type == MESHFIELDTYPE_SEA)
+		{// もし海のフィールドだったらテクスチャを動かす
+			pMeshField->tex.x += 0.00005f;
+			pMeshField->tex.y += 0.00005f;
 
-		// 頂点バッファをロックし,頂点情報へのポインタを取得
-		pMeshField->pVtxBuff->Lock(0, 0, (void**)&pVtx, 0);
+			VERTEX_3D* pVtx;			// 頂点情報へのポインタ
 
-		for (int nCntVtxDepth = 0; nCntVtxDepth < pMeshField->nSplitDepth; nCntVtxDepth++)
-		{
-			for (int nCntVtxWidht = 0; nCntVtxWidht < pMeshField->nSplitWidth; nCntVtxWidht++)
+			// 頂点バッファをロックし,頂点情報へのポインタを取得
+			pMeshField->pVtxBuff->Lock(0, 0, (void**)&pVtx, 0);
+
+			for (int nCntVtxDepth = 0; nCntVtxDepth < pMeshField->nSplitDepth; nCntVtxDepth++)
 			{
-				pVtx[nCntVtxWidht].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+				for (int nCntVtxWidht = 0; nCntVtxWidht < pMeshField->nSplitWidth; nCntVtxWidht++)
+				{
+					pVtx[nCntVtxWidht].tex = D3DXVECTOR2(pMeshField->tex.x * nCntVtxWidht, pMeshField->tex.y * nCntVtxDepth);
+				}
+
+				pVtx += pMeshField->nSplitWidth;
 			}
 
-			pVtx += pMeshField->nSplitWidth;
+			// 頂点バッファをアンロックする
+			pMeshField->pVtxBuff->Unlock();
 		}
-
-		// 頂点バッファをアンロックする
-		pMeshField->pVtxBuff->Unlock();
 	}
 }
 
@@ -192,7 +200,7 @@ void UpdateMeshField(void)
 //=============================================================================
 void SetMeshField(D3DXVECTOR3 pos, D3DXVECTOR3 rot, float fWidth, float fDepth, int nSplitWidth, int nSplitDepth, MESHFIELDTYPE type)
 {
-	PMESHFIELD pMeshField = &g_ameshfield[0];
+	PMESHFIELD pMeshField = &g_ameshfield[0];	// 先頭アドレスポインタ
 
 	// デバイスの取得
 	LPDIRECT3DDEVICE9 pDevice = GetDevice();
@@ -200,7 +208,7 @@ void SetMeshField(D3DXVECTOR3 pos, D3DXVECTOR3 rot, float fWidth, float fDepth, 
 	for (int nCntField = 0; nCntField < MAX_MESHFIELD; nCntField++, pMeshField++)
 	{
 		if (pMeshField->bUse == true)
-		{
+		{// 使ってたら弾く
 			continue;
 		}
 
@@ -211,6 +219,7 @@ void SetMeshField(D3DXVECTOR3 pos, D3DXVECTOR3 rot, float fWidth, float fDepth, 
 		// メッシュフィールドの設定
 		pMeshField->pos = pos;
 		pMeshField->rot = rot;
+		pMeshField->tex = D3DXVECTOR2(1.0f, 1.0f);
 		pMeshField->type = type;
 		pMeshField->nSplitWidth = nSplitWidth;
 		pMeshField->nSplitDepth = nSplitDepth;
@@ -236,7 +245,7 @@ void SetMeshField(D3DXVECTOR3 pos, D3DXVECTOR3 rot, float fWidth, float fDepth, 
 				pVtx[nCntVtxWidht].pos = D3DXVECTOR3(fWidth * nCntVtxWidht, 0.0f, -fDepth * nCntVtxDepth);
 				pVtx[nCntVtxWidht].nor = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
 				pVtx[nCntVtxWidht].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
-				pVtx[nCntVtxWidht].tex = D3DXVECTOR2(1.0f * nCntVtxWidht, 1.0f * nCntVtxDepth);
+				pVtx[nCntVtxWidht].tex = D3DXVECTOR2(pMeshField->tex.x * nCntVtxWidht, pMeshField->tex.y * nCntVtxDepth);
 			}
 
 			pVtx += nSplitWidth;
@@ -297,11 +306,13 @@ PMESHFIELD CollisionMeshField(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTO
 	D3DXMATRIX mtxRot, mtxTrans;				// 計算用マトリックス
 	D3DXVECTOR3 vecNor, VecMove;
 	PMESHFIELD pMeshField = &g_ameshfield[0];
+	PMESHFIELD pRideMeshField = NULL;
+	float fRidePosY = 0.0f;
 
 	for (int nCntMeshField = 0; nCntMeshField < MAX_MESHFIELD; nCntMeshField++, pMeshField++)
 	{
 		if (pMeshField->bUse == false)
-		{
+		{// 使っていなければ弾く
 			continue;
 		}
 
@@ -320,6 +331,13 @@ PMESHFIELD CollisionMeshField(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTO
 		// 位置を反映
 		D3DXMatrixTranslation(&mtxTrans, pMeshField->pos.x, pMeshField->pos.y, pMeshField->pos.z);
 		D3DXMatrixMultiply(&pMeshField->mtxWorld, &pMeshField->mtxWorld, &mtxTrans);
+
+		if (pMeshField->mtxParent != NULL)
+		{// もし親のマトリックスがあればかけ合わせる
+			// ワールドマトリックスの初期化
+			D3DXMatrixIdentity(&pMeshField->mtxWorld);
+			D3DXMatrixMultiply(&pMeshField->mtxWorld, &pMeshField->mtxWorld, pMeshField->mtxParent);
+		}
 
 		for (int nCntVtxDepth = 0; nCntVtxDepth < pMeshField->nSplitDepth - 1; nCntVtxDepth++)
 		{
@@ -358,14 +376,21 @@ PMESHFIELD CollisionMeshField(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTO
 					D3DXVec3Normalize(&vecNor, &vecNor);	// 正規化
 
 					// 高さ
-					float fPosY = PosA.y - (((vecNor.x * pPos->x) - (vecNor.x * PosA.x)) + ((vecNor.z * pPos->z) - (vecNor.z * PosA.z)) / vecNor.y);
-
-					PrintDebugProc("乗っている三角形 = { %d %d %d }\n", nCntVtxWidht, nCntVtxDepth, 1);
+					float fPosY = PosA.y - ((vecNor.x * (pPos->x - PosA.x) + vecNor.z * (pPos->z - PosA.z)) / vecNor.y);
 
 					if (pPos->y <= fPosY)
 					{
-						pPos->y = fPosY;
-						return pMeshField;
+						if (pRideMeshField != NULL)
+						{
+							if (fRidePosY > fPosY)
+							{
+								break;
+							}
+						}
+
+						fRidePosY = fPosY;
+						pRideMeshField = pMeshField;
+						break;
 					}
 				}
 
@@ -396,14 +421,21 @@ PMESHFIELD CollisionMeshField(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTO
 					
 					D3DXVec3Normalize(&vecNor, &vecNor);
 
-					float fPosY = PosA.y - (((vecNor.x * pPos->x) - (vecNor.x * PosA.x)) + ((vecNor.z * pPos->z) - (vecNor.z * PosA.z)) / vecNor.y);
-
-					PrintDebugProc("乗っている三角形 = { %d %d %d }\n", nCntVtxWidht, nCntVtxDepth, 2);
+					float fPosY = PosA.y - ((vecNor.x * (pPos->x - PosA.x) + vecNor.z * (pPos->z - PosA.z)) / vecNor.y);
 
 					if (pPos->y <= fPosY)
 					{
-						pPos->y = fPosY;
-						return pMeshField;
+						if (pRideMeshField != NULL)
+						{
+							if (fRidePosY > fPosY)
+							{
+								break;
+							}
+						}
+
+						fRidePosY = fPosY;
+						pRideMeshField = pMeshField;
+						break;
 					}
 				}
 
@@ -416,13 +448,24 @@ PMESHFIELD CollisionMeshField(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTO
 		pMeshField->pVtxBuff->Unlock();
 	}
 
+	if (pRideMeshField != NULL)
+	{
+		if (pRideMeshField->type != MESHFIELDTYPE_SEA)
+		{
+			pPos->y = fRidePosY;
+			pMove->y = 0.0f;
+		}
+
+		return pRideMeshField;
+	}
+
 	return NULL;
 }
 
 //=============================================================================
 //	メッシュの設定処理
 //=============================================================================
-void SetMesh(D3DXVECTOR3 pos, D3DXVECTOR3 rot, int nVtx, D3DXVECTOR3* VtxPos, int nSplitWidth, int nSplitDepth, MESHFIELDTYPE type)
+void SetMesh(D3DXVECTOR3 pos, D3DXVECTOR3 rot, int nVtx, D3DXVECTOR3* VtxPos, int nSplitWidth, int nSplitDepth, MESHFIELDTYPE type, D3DXMATRIX *pmtxParent)
 {
 	PMESHFIELD pMeshField = &g_ameshfield[0];
 
@@ -442,6 +485,7 @@ void SetMesh(D3DXVECTOR3 pos, D3DXVECTOR3 rot, int nVtx, D3DXVECTOR3* VtxPos, in
 		pMeshField->type = type;
 		pMeshField->nSplitWidth = nSplitWidth;
 		pMeshField->nSplitDepth = nSplitDepth;
+		pMeshField->mtxParent = pmtxParent;
 
 		// 頂点バッファの生成
 		pDevice->CreateVertexBuffer(sizeof(VERTEX_3D) * nVtx,
@@ -509,6 +553,7 @@ void SetMesh(D3DXVECTOR3 pos, D3DXVECTOR3 rot, int nVtx, D3DXVECTOR3* VtxPos, in
 		// インデックスバッファをアンロックする
 		pMeshField->pIdxBuff->Unlock();
 
+		pMeshField->bMesh = true;
 		pMeshField->bUse = true;
 		break;
 	}
@@ -517,7 +562,7 @@ void SetMesh(D3DXVECTOR3 pos, D3DXVECTOR3 rot, int nVtx, D3DXVECTOR3* VtxPos, in
 //=============================================================================
 //	メッシュの読み込み処理
 //=============================================================================
-void LoadMesh(const char* pFileName)
+void LoadMesh(const char* pFileName, MeshInfo* MeshInfo)
 {
 	FILE* pFile = fopen(pFileName, "rb");
 
@@ -526,17 +571,10 @@ void LoadMesh(const char* pFileName)
 		return;
 	}
 
-	int nVtx = 0;
-	int nSplitWidth = 0;
-	int nSplitDepth = 0;
-	D3DXVECTOR3 VtxPos[MAX_VTX] = {};
-
-	fread(&nVtx, sizeof(int), 1, pFile);
-	fread(&nSplitWidth, sizeof(int), 1, pFile);
-	fread(&nSplitDepth, sizeof(int), 1, pFile);
-	fread(&VtxPos[0], sizeof(D3DXVECTOR3), nVtx, pFile);
+	fread(&MeshInfo->nVtx, sizeof(int), 1, pFile);
+	fread(&MeshInfo->nSplitWidth, sizeof(int), 1, pFile);
+	fread(&MeshInfo->nSplitDepth, sizeof(int), 1, pFile);
+	fread(&MeshInfo->VtxPos[0], sizeof(D3DXVECTOR3), MeshInfo->nVtx, pFile);
 
 	fclose(pFile);
-
-	SetMesh(INIT_D3DXVEC3, INIT_D3DXVEC3, nVtx, &VtxPos[0], nSplitWidth, nSplitDepth, MESHFIELDTYPE_ICE);
 }

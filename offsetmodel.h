@@ -30,6 +30,8 @@ typedef enum
 	MOTIONTYPE_JUMP,			// ジャンプ
 	MOTIONTYPE_LANDING,			// 着地
 	MOTIONTYPE_ACTIONMOVE,		// アクション移動
+	MOTIONTYPE_BUTREACTION,		// リアクション(否定)
+	MOTIONTYPE_REACTION,		// リアクション(肯定)
 	MOTIONTYPE_MAX
 }MOTIONTYPE;
 
@@ -44,6 +46,7 @@ typedef struct
 	float fRotX;				// 向きX
 	float fRotY;				// 向きY
 	float fRotZ;				// 向きZ
+
 }KEY;
 
 //*****************************************************************************

@@ -22,12 +22,13 @@ typedef enum
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
-void InitFade(MODE modeNext);
+void InitFade(MODE modeNext, D3DXCOLOR col);
 void UninitFade(void);
 void UpdateFade(void);
 void DrawFade(void);
 
-void SetFade(MODE modeNext, float fFadeInSpeed, float fFadeOutSpeed);
+void SetFade(MODE modeNext, D3DXCOLOR col, float fFadeInSpeed, float fFadeOutSpeed);
+void SetNoneFade(D3DXCOLOR col, float fFadeInSpeed, float fFadeOutSpeed);
 FADE GetFade(void);
 
 #endif

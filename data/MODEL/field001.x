@@ -1565,7 +1565,7 @@ Mesh {
    0.750000;0.750000;0.750000;;
    0.000000;0.000000;0.000000;;
    TextureFilename {
-    "C:\\Users\\student\\source\\DirectX\\3DActionGame_000\\DirectX_003\\data\\TEXTURE\\ice001.jpg";
+    "data\\TEXTURE\\ice001.jpg";
    }
   }
   Material {

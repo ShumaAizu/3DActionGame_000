@@ -10,6 +10,7 @@
 
 #include "main.h"
 #include "player.h"
+#include "result.h"
 
 //*****************************************************************************
 // マクロ定義
@@ -31,6 +32,19 @@ typedef enum
 }FRIENDSSTATE;
 
 //*****************************************************************************
+// 仲間の状態 (二個目)
+//*****************************************************************************
+typedef enum
+{
+	FRIENDSSUBSTATE_NUETRAL = 0,		// 通常状態
+	FRIENDSSUBSTATE_MOVE,				// 移動状態
+	FRIENDSSUBSTATE_JUMP,				// ジャンプ状態
+	FRIENDSSUBSTATE_ACTIONMOVE,			// アクション移動状態
+	FRIENDSSUBSTATE_EVENT,				// イベント状態
+	FRIENDSSUBSTATE_MAX
+}FRIENDSSUBSTATE;
+
+//*****************************************************************************
 // 仲間の種類
 //*****************************************************************************
 typedef enum
@@ -46,10 +60,12 @@ typedef enum
 //*****************************************************************************
 typedef enum
 {
-	FRIENDEVENT_000 = 0,
-	FRIENDEVENT_001,
-	FRIENDEVENT_002,
-	FRIENDEVENT_MAX
+	FRIENDEVENT_NONE = 0,			// 何もない
+	FRIENDEVENT_REQUEST,			// リクエスト
+	FRIENDEVENT_JUMP,				// ジャンプ
+	FRIENDEVENT_MOVE,				// 移動
+	FRIENDEVENT_SHORTAGE,			// 人数不足
+	FRIENDEVENT_MAX					// 
 }FRIENDEVENT;
 
 //*****************************************************************************
@@ -79,23 +95,30 @@ typedef struct Friends
 	int nCounterBlend;							// ブレンドカウンター
 
 	D3DXVECTOR3 pos;							// 現在の位置
+	D3DXVECTOR3 posInit;						// 初期位置
 	D3DXVECTOR3 posOld;							// 過去の位置
+	D3DXVECTOR3 posOldRand;						// 最後の着地点
 	D3DXVECTOR3 *posDest;						// 目的位置
 	D3DXVECTOR3 rot;							// 向き
 	D3DXVECTOR3 rotDest;						// 目的向き
 	D3DXVECTOR3 vecDest;						// 目的向きベクトル
 	D3DXVECTOR3 move;							// 移動量
 	FRIENDSSTATE state;							// 状態
+	FRIENDSSUBSTATE substate;					// 状態(二個目)
 	FRIENDSTYPE type;							// 種類
 	FRIENDEVENT event;							// イベント
 	float fRadius;								// 半径
+	float fMoveAngle;							// 移動角度
 	int nChangeCounter;							// モード切替カウンター
 	int nPosLogCounter;							// ログを記録するまでのカウント
 	float fInertia;								// 慣性
 	float fSpeed;								// 速度
 	bool bJump;									// ジャンプ状態
+	bool* bJumpLog;								// ジャンプのログ
 	bool bUse;									// 使用状態
 	int nIdxShadow;								// 影のインデックス
+	int nIdxRequest;							// リクエストのインデックス
+	int nIdxTutorial;							// チュートリアルのインデックス
 	int nIdxPosLog;								// 位置記録のインデックス
 	PMESHFIELD pRideField;						// 乗っているフィールド
 
@@ -133,6 +156,12 @@ void LoadPartsFriends(const char* pPartsFile);
 void LoadCharacterFriends(D3DXVECTOR3 pos, D3DXVECTOR3 rot, int nIdxModel, int nIdxModelParent);
 void LoadMotionFriends(bool bLoop, int nNumKey, KEY_INFO* pKeyInfo, int nMotion);
 void NumFriendsAdd(void);
+bool FriendsEventController(PFRIENDS pFriends);
+int GetNumFriends(void);
+void SetNumResultFriends(void);
+int GetNumResultFriends(void);
 bool CollisionFriends(D3DXVECTOR3* pPos, float fRadius);
+void SaveFriends(void);
+void SetFriendsResult(ResultFriendsInfo* pResultFriendsInfo);
 
 #endif

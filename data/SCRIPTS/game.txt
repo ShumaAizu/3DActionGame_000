@@ -17,7 +17,7 @@ MOTIONSCRIPT = data/SCRIPTS/penguin_motion.txt 0
 #	オブジェクトファイル
 #------------------------------------------------------------------------------
 
-ITEMSCRIPT = data/SCRIPTS/object.txt
+OBJECTSCRIPT = data/SCRIPTS/gameobject.txt
 
 END_SCRIPT
 

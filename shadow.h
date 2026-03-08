@@ -23,8 +23,11 @@
 typedef struct
 {
 	D3DXVECTOR3 pos;							// 位置
+	D3DXVECTOR3 posOld;							// 過去の位置
+	D3DXVECTOR3 move;							// 移動量
 	D3DXVECTOR3 rot;							// 向き
 	D3DXMATRIX mtxWorld;						// ワールドマトリックス
+	D3DXMATRIX* mtxParent;						// 親マトリックス
 	bool bUse;									// 使用状態
 }Shadow;
 
@@ -37,5 +40,6 @@ void UpdateShadow(void);
 void DrawShadow(void);
 int SetShadow(void);
 void SetPositionShadow(int IdxShadow, D3DXVECTOR3 pos);
+void ReleaseShadow(int IdxShadow);
 
 #endif
