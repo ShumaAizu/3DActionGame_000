@@ -25,8 +25,8 @@
 Camera g_camera;				// カメラの情報
 float fCameraDif;				// カメラの高さ
 int g_nModeChangeCounter;		// モード切替カウンター
-bool g_bEdiet;
-bool g_bCameraChange;
+bool g_bEdiet;					// エディットモード
+bool g_bCameraChange;			// カメラ変更状態
 bool g_bCameraUpdate;			// カメラ更新可能か
 
 //*****************************************************************************
@@ -230,34 +230,6 @@ void UpdateGameCamera(void)
 	g_camera.posV.x += (g_camera.posVDest.x - g_camera.posV.x) * CAMERA_INERTIA;
 	g_camera.posV.y += (g_camera.posVDest.y - g_camera.posV.y) * CAMERA_INERTIA;
 	g_camera.posV.z += (g_camera.posVDest.z - g_camera.posV.z) * CAMERA_INERTIA;
-
-	if (pPlayer->fMoveKeyboard == 0)
-	{
-		nAroundCounter--;
-		//if (nAroundCounter <= 0)
-		//{
-		//	AngleNormalize(g_camera.rot.y);
-
-		//	AngleNormalize(pPlayer->rot.y);
-		//	
-		//	float ftest = (pPlayer->rot.y - g_camera.rot.y);
-
-		//	AngleNormalize(ftest);
-
-		//	g_camera.rot.y += ftest * CAMERA_INERTIA;
-
-		//	//if (pPlayer->rot.y - g_camera.rot.y < 0.25f)
-		//	//{
-		//	//	g_camera.rot.y = pPlayer->rot.y;
-		//	//}
-
-		//	AngleNormalize(g_camera.rot.y);
-		//}
-	}
-	else
-	{
-		nAroundCounter = AROUNDCOUNTER;
-	}
 }
 
 //=============================================================================
@@ -401,9 +373,4 @@ Camera *GetCamera(void)
 void CameraUpdateswitch(bool bFlag)
 {
 	g_bCameraUpdate = bFlag;
-}
-
-void* ReturnFunc(MODE mode)
-{
-	return &(UpdateModeCamera[mode]);
 }

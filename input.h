@@ -8,6 +8,9 @@
 #ifndef _INPUT_H_
 #define _INPUT_H_
 
+//*****************************************************************************
+// インクルードヘッダー
+//*****************************************************************************
 #include "main.h"
 
 //*****************************************************************************
@@ -98,9 +101,6 @@ bool GetJoypadStickPress(JOYSTICK stick);
 bool GetJoypadStickRepeat(JOYSTICK stick);
 void SetJoypadVibration(WORD nLVibration, WORD nRVibration, int nVibCounter);
 XINPUT_STATE *GetJoypadState(void);
-bool GetJoypadStroke(WORD key);
-XINPUT_KEYSTROKE* GetJoypadStroke(void);
-bool GetJoypadControl(void);
 
 HRESULT InitMouse(HWND hWnd);
 void UninitMouse(void);

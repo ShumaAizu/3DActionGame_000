@@ -19,9 +19,9 @@
 //*****************************************************************************
 typedef enum
 {
-	RESULTMENU_RESTART = 0,
-	RESULTMENU_STAGESELECT,
-	RESULTMENU_QUIT,
+	RESULTMENU_RESTART = 0,		// もう一回
+	RESULTMENU_STAGESELECT,		// ステージ選択
+	RESULTMENU_QUIT,			// 終了
 	RESULTMENU_MAX
 }RESULTMENU;
 

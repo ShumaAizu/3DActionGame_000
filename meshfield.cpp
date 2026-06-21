@@ -5,9 +5,6 @@
 // 
 //=============================================================================
 
-// メモ
-// フィールド全体の情報
-
 #include "main.h"
 #include "meshfield.h"
 #include "input.h"
@@ -63,7 +60,6 @@ void InitMeshField(void)
 		pMeshField->bUse = false;
 	}
 
-	//SetMeshField(D3DXVECTOR3(-1500.0f, -49.0f, 1500.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), 300.0f, 300.0f, 10, 10, MESHFIELDTYPE_ICE);
 	SetMeshField(D3DXVECTOR3(-5000.0f, -50.0f, 5000.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), 500.0f, 500.0f, 20, 20, MESHFIELDTYPE_SEA);
 }
 
@@ -360,11 +356,6 @@ PMESHFIELD CollisionMeshField(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTO
 				D3DXVECTOR3 vecToPosB = *pPos - PosB;
 				D3DXVECTOR3 vecToPosC = *pPos - PosC;
 
-				// 正規化
-				D3DXVec3Normalize(&vecLineA, &vecLineA);
-				D3DXVec3Normalize(&vecLineB, &vecLineB);
-				D3DXVec3Normalize(&vecLineC, &vecLineC);
-
 				if ((vecLineA.z * vecToPosA.x) - (vecLineA.x * vecToPosA.z) < 0 &&
 					(vecLineB.z * vecToPosB.x) - (vecLineB.x * vecToPosB.z) < 0 &&
 					(vecLineC.z * vecToPosC.x) - (vecLineC.x * vecToPosC.z) < 0)
@@ -406,11 +397,6 @@ PMESHFIELD CollisionMeshField(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTO
 				vecToPosA = *pPos - PosA;
 				vecToPosB = *pPos - PosB;
 				vecToPosC = *pPos - PosC;
-
-				// 正規化
-				D3DXVec3Normalize(&vecLineA, &vecLineA);
-				D3DXVec3Normalize(&vecLineB, &vecLineB);
-				D3DXVec3Normalize(&vecLineC, &vecLineC);
 
 				if ((vecLineA.z * vecToPosA.x) - (vecLineA.x * vecToPosA.z) > 0 &&
 					(vecLineB.z * vecToPosB.x) - (vecLineB.x * vecToPosB.z) > 0 &&

@@ -24,9 +24,9 @@
 //*****************************************************************************
 typedef enum
 {
-	OBJECTTYPE_PLAYER = 0,
-	OBJECTTYPE_FRIENDS,
-	OBJECTTYPE_MAX
+	OBJECTTYPE_PLAYER = 0,			// ÉvÉåÉCÉÑÅ[
+	OBJECTTYPE_FRIENDS,				// íáä‘
+	OBJECTTYPE_MAX					// ëçêî
 }OBJECTTYPE;
 
 //*****************************************************************************

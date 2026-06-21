@@ -129,9 +129,6 @@
     <ClCompile Include="pch.cpp">
       <Filter>main\cpp</Filter>
     </ClCompile>
-    <ClCompile Include="object.cpp">
-      <Filter>ソース ファイル\object</Filter>
-    </ClCompile>
     <ClCompile Include="fade.cpp">
       <Filter>main\cpp</Filter>
     </ClCompile>
@@ -216,9 +213,6 @@
     <ClCompile Include="reaction.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="thread.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bullet.h">
@@ -268,9 +262,6 @@
     </ClInclude>
     <ClInclude Include="pch.h">
       <Filter>main\h</Filter>
-    </ClInclude>
-    <ClInclude Include="object.h">
-      <Filter>ヘッダー ファイル\object</Filter>
     </ClInclude>
     <ClInclude Include="effect.h">
       <Filter>main\effect\h</Filter>
@@ -354,9 +345,6 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="reaction.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="thread.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

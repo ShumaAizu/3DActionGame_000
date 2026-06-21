@@ -64,5 +64,4 @@ void SetModeCamera(MODE mode);
 Camera* GetCamera(void);
 void CameraUpdateswitch(bool bFlag);
 
-void* ReturnFunc(MODE mode);
 #endif

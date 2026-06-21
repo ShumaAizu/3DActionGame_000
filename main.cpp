@@ -5,6 +5,9 @@
 // 
 //=============================================================================
 
+//*****************************************************************************
+// インクルードヘッダー
+//*****************************************************************************
 #include "main.h"
 #include "input.h"
 #include "debugproc.h"
@@ -38,7 +41,7 @@
 
 #include "bullet.h"
 
-#include "thread.h"
+#include <chrono>
 
 //*****************************************************************************
 // マクロ定義
@@ -67,7 +70,6 @@ bool g_isFullscreen = false;				// フルスクリーンの使用状況
 RECT g_windowRect;							// ウィンドウサイズ
 bool g_bDebug = false;						// デバッグ表示の状態
 
-DevData g_Device = {};
 bool g_bMainThread = true;
 
 //=============================================================================
@@ -533,13 +535,6 @@ void Update(void)
 	// カメラの更新処理
 	UpdateCamera();
 
-	void (*pFunc) = ReturnFunc(g_mode);
-
-	if (pFunc != NULL)
-	{
-		pFunc;
-	}
-
 	switch (g_mode)
 	{
 		// タイトルモード
@@ -578,6 +573,7 @@ void Update(void)
 //===============================================================================
 void Draw(void)
 {
+	ProcessingSpeed(true);
 	// 画面クリア(バックバッファとZバッファのクリア)
 	g_pD3DDevice->Clear(0, NULL,
 		(D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER),
@@ -587,7 +583,6 @@ void Draw(void)
 	if (SUCCEEDED(g_pD3DDevice->BeginScene()))
 	{// 描画開始が成功した場合
 		// 各種オブジェクトの描画処理
-
 		// カメラの設定処理
 		SetCamera();
 
@@ -635,6 +630,7 @@ void Draw(void)
 
 	// バックバッファとフロントバッファの入れ替え
 	g_pD3DDevice->Present(NULL, NULL, NULL, NULL);
+	ProcessingSpeed(false, "Draw");
 }
 
 //==================================================================================
@@ -832,9 +828,9 @@ bool CrossCollision(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTOR3 posStar
 	return bCollision;
 }
 
-//================================================
+//=============================================================================
 // ウィンドウフルスクリーン処理
-//================================================
+//=============================================================================
 void ToggleFullscreen(HWND hWnd)
 {
 	// 現在のウィンドウスタイルを取得
@@ -861,27 +857,36 @@ void ToggleFullscreen(HWND hWnd)
 	g_isFullscreen = !g_isFullscreen;
 }
 
-////================================================================================================================
-//// --- デバイスの取得 ---
-////================================================================================================================
-//LPDIRECT3DDEVICE9 GetDevice(void)
-//{
-//	//g_Device.LockDevData();
-//	return g_pD3DDevice;
-//}
-
-//================================================================================================================
-// --- デバイスの取得終了 ---
-//================================================================================================================
-void EndDevice(void)
+//=============================================================================
+//	処理速度測定処理
+//=============================================================================
+void ProcessingSpeed(bool isStart, const char* ptext)
 {
-	g_Device.UnlockDevData();
-}
+	static DWORD dwCurrentTime;		// 現在時刻
+	static DWORD dwExecLastTime;	// 最後に処理した時刻
 
-//================================================================================================================
-// --- メインスレッドの状態の取得 ---
-//================================================================================================================
-bool GetIsMainThread(void)
-{
-	return g_bMainThread;
+	using namespace std;
+
+	static chrono::high_resolution_clock::time_point start, end;
+
+	if (isStart)
+	{
+		dwExecLastTime = timeGetTime();
+		start = chrono::high_resolution_clock::now();
+	}
+	else
+	{
+		dwCurrentTime = timeGetTime();
+		end = chrono::high_resolution_clock::now();
+
+		double time = static_cast<double>(chrono::duration_cast<chrono::microseconds>(end - start).count() / 1000.0f);
+
+		char alog[256];
+		sprintf_s(alog, "%s : %lfms\n", ptext, time);
+
+#ifdef _DEBUG
+		PrintDebugProc("%s : %lfms\n", ptext, time);
+#endif
+		OutputDebugStringA(alog);
+	}
 }

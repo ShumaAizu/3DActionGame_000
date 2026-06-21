@@ -45,17 +45,6 @@ void InitMeshWall(void)
 		g_ameshwall[nCntMeshWall].rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 		g_ameshwall[nCntMeshWall].bUse = false;
 	}
-
-	//SetMeshWall(D3DXVECTOR3(-1000.0f, 200.0f, 1500.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), 100.0f, 100.0f, 20, 2);
-	//SetMeshWall(D3DXVECTOR3(-1000.0f, 200.0f, -1500.0f), D3DXVECTOR3(0.0f, D3DX_PI * -0.5f, 0.0f), 100.0f, 100.0f, 30, 2);
-	//SetMeshWall(D3DXVECTOR3(1000.0f, 200.0f, 1500.0f), D3DXVECTOR3(0.0f, D3DX_PI * 0.5f, 0.0f), 100.0f, 100.0f, 30, 2);
-	//SetMeshWall(D3DXVECTOR3(1000.0f, 200.0f, -1500.0f), D3DXVECTOR3(0.0f, D3DX_PI, 0.0f), 100.0f, 100.0f, 20, 2);
-
-	//SetMeshWall(D3DXVECTOR3(-50.0f, 200.0f, 150.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), 100.0f, 100.0f, 2, 2);
-	//SetMeshWall(D3DXVECTOR3(550.0f, 200.0f, 150.0f), D3DXVECTOR3(0.0f, D3DX_PI * -0.25f, 0.0f), 100.0f, 100.0f, 2, 2);
-	//SetMeshWall(D3DXVECTOR3(100.0f, 200.0f, 200.0f), D3DXVECTOR3(0.0f, D3DX_PI * 0.5f, 0.0f), 100.0f, 100.0f, 2, 2);
-	//SetMeshWall(D3DXVECTOR3(100.0f, 200.0f, -50.0f), D3DXVECTOR3(0.0f, D3DX_PI, 0.0f), 100.0f, 100.0f, 2, 2);
-
 }
 
 //=============================================================================

@@ -37,4 +37,6 @@ LPDIRECT3DDEVICE9 GetDevice(void);
 void EndDevice(void);
 bool GetIsMainThread(void);
 
+void ProcessingSpeed(bool isStart, const char* ptext = "");
+
 #endif

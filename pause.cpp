@@ -5,6 +5,9 @@
 // 
 //=============================================================================
 
+//*****************************************************************************
+// インクルードヘッダー
+//*****************************************************************************
 #include "main.h"
 #include "pause.h"
 #include "input.h"
@@ -17,8 +20,8 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define PAUSEMENU_WIDTH		(300.0f)
-#define PAUSEMENU_HEIGHT	(100.0f)
+#define PAUSEMENU_WIDTH		(300.0f)				// メニューの各項目の幅
+#define PAUSEMENU_HEIGHT	(100.0f)				// メニューの各項目の高さ
 
 //*****************************************************************************
 // グローバル変数
@@ -26,9 +29,9 @@
 LPDIRECT3DTEXTURE9 g_apTexturePause[PAUSE_MENU_MAX] = {};		// テクスチャへのポインタ
 LPDIRECT3DVERTEXBUFFER9 g_pVtxBuffPause = NULL;					// 頂点バッファへのポインタ
 PAUSE_MENU g_pauseMenu = PAUSE_MENU_CONTINUE;					// ポーズメニューの状態
-bool g_bPauseDisp = true;
+bool g_bPauseDisp = true;										// 表示状態
 
-PauseMenuInfo g_aPauseMenuInfo[PAUSE_MENU_MAX] =
+PauseMenuInfo g_aPauseMenuInfo[PAUSE_MENU_MAX] =				// ポーズメニューの情報
 {
 	{{ SCREEN_WIDTH / 2, 180.0f, 0.0f }, { 0.0f, 0.0f, 0.95f * D3DX_PI }, PAUSEMENU_WIDTH, PAUSEMENU_HEIGHT, 0.0f, 0.0f },
 	{{ SCREEN_WIDTH / 2, 380.0f, 0.0f }, { 0.0f, 0.0f, -0.95f * D3DX_PI }, PAUSEMENU_WIDTH, PAUSEMENU_HEIGHT, 0.0f, 0.0f },
@@ -40,6 +43,7 @@ PauseMenuInfo g_aPauseMenuInfo[PAUSE_MENU_MAX] =
 //=============================================================================
 void InitPause(void)
 {
+	// テクスチャファイル
 	const char* pPauseMenuFileName[] =
 	{
 		"data\\TEXTURE\\continue000.png",
@@ -71,6 +75,7 @@ void InitPause(void)
 	g_pauseMenu = PAUSE_MENU_CONTINUE;
 	g_bPauseDisp = true;
 
+	// ポーズメニューの情報
 	PauseMenuInfo* pPauseMenuInfo = &g_aPauseMenuInfo[0];
 
 	VERTEX_2D *pVtx;			// 頂点情報へのポインタ
@@ -80,6 +85,7 @@ void InitPause(void)
 
 	for (int nCntPause = 0; nCntPause < PAUSE_MENU_MAX; nCntPause++, pPauseMenuInfo++)
 	{
+		// 長さと角度を算出
 		pPauseMenuInfo->fLength = SQRTF(pPauseMenuInfo->fWidth, pPauseMenuInfo->fHeight);
 		pPauseMenuInfo->fAngle = atan2f(pPauseMenuInfo->fWidth, pPauseMenuInfo->fHeight);
 
@@ -124,6 +130,7 @@ void InitPause(void)
 	// 頂点バッファをアンロックする
 	g_pVtxBuffPause->Unlock();
 
+	// 背景の初期化処理
 	InitBg();
 }
 
@@ -149,6 +156,7 @@ void UninitPause(void)
 		g_pVtxBuffPause = NULL;
 	}
 
+	// 背景の終了処理
 	UninitBg();
 }
 
@@ -158,7 +166,8 @@ void UninitPause(void)
 void DrawPause(void)
 {
 	if (g_bPauseDisp == true)
-	{
+	{// ポーズメニューが表示されているなら
+		// 背景の描画処理
 		DrawBg();
 	}
 
@@ -191,8 +200,10 @@ void DrawPause(void)
 //=============================================================================
 void UpdatePause(void)
 {
+	// 背景の更新処理
 	UpdateBg();
 
+	// ポーズメニューの情報
 	PauseMenuInfo* pPauseMenuInfo = &g_aPauseMenuInfo[0];
 
 	// 頂点座標の更新
@@ -204,17 +215,20 @@ void UpdatePause(void)
 	if (GetJoypadRepeat(JOYKEY_UP) == true || GetKeyboardRepeat(DIK_W) == true || GetJoypadStickRepeat(JOYSTICKL_UP) == true)
 	{ // 上方向キーが押されたら
 		// 現在のモードに合わせて変更
-		PlaySound(SOUND_LABEL_SELECT000);
+		PlaySound(SOUND_LABEL_SELECT000);	// 効果音
 		switch (g_pauseMenu)
 		{
+			// 再開
 		case PAUSE_MENU_CONTINUE:
 			g_pauseMenu = PAUSE_MENU_QUIT;
 			break;
 
+			// やり直し
 		case PAUSE_MENU_RESTART:
 			g_pauseMenu = PAUSE_MENU_CONTINUE;
 			break;
 
+			// 終了
 		case PAUSE_MENU_QUIT:
 			g_pauseMenu = PAUSE_MENU_RESTART;
 			break;
@@ -227,14 +241,17 @@ void UpdatePause(void)
 		PlaySound(SOUND_LABEL_SELECT000);
 		switch (g_pauseMenu)
 		{
+			// 再開
 		case PAUSE_MENU_CONTINUE:
 			g_pauseMenu = PAUSE_MENU_RESTART;
 			break;
 
+			// やり直し
 		case PAUSE_MENU_RESTART:
 			g_pauseMenu = PAUSE_MENU_QUIT;
 			break;
 
+			// 終了
 		case PAUSE_MENU_QUIT:
 			g_pauseMenu = PAUSE_MENU_CONTINUE;
 			break;
@@ -290,27 +307,33 @@ void UpdatePause(void)
 	{ // 決定キーが押されたら
 		// ポーズを解除
 		SetEnablePause(false);
-		PlaySound(SOUND_LABEL_SELECT001);
+		PlaySound(SOUND_LABEL_SELECT001);	// 効果音
 		// 現在のモードに合わせて変更
 		switch (g_pauseMenu)
 		{
+			// 再開
 		case PAUSE_MENU_CONTINUE:
 			break;
 
+			// やり直し
 		case PAUSE_MENU_RESTART:
 			SetFade(MODE_GAME, COLOR_BLACK, 0.025f, 0.025f);
 			break;
 
+			// 終了
 		case PAUSE_MENU_QUIT:
 			SetFade(MODE_TITLE, COLOR_BLACK, 0.025f, 0.025f);
 			break;
 		}
 	}
 
+
+#ifdef _DEBUG
 	if (GetKeyboardTrigger(DIK_F5) == true)
-	{
+	{// ポーズメニュー非表示
 		g_bPauseDisp = g_bPauseDisp ? false : true;
 	}
+#endif
 
 	// 頂点バッファをアンロックする
 	g_pVtxBuffPause->Unlock();

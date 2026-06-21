@@ -113,6 +113,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>pch.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -173,7 +174,6 @@
     <ClCompile Include="meshsphere.cpp" />
     <ClCompile Include="meshwall.cpp" />
     <ClCompile Include="model.cpp" />
-    <ClCompile Include="object.cpp" />
     <ClCompile Include="offsetmodel.cpp" />
     <ClCompile Include="particle.cpp" />
     <ClCompile Include="pause.cpp" />
@@ -192,7 +192,6 @@
     <ClCompile Include="shadow.cpp" />
     <ClCompile Include="snow.cpp" />
     <ClCompile Include="sound.cpp" />
-    <ClCompile Include="thread.cpp" />
     <ClCompile Include="time.cpp" />
     <ClCompile Include="title.cpp" />
     <ClCompile Include="titlelogo.cpp" />
@@ -224,7 +223,6 @@
     <ClInclude Include="meshsphere.h" />
     <ClInclude Include="meshwall.h" />
     <ClInclude Include="model.h" />
-    <ClInclude Include="object.h" />
     <ClInclude Include="offsetmodel.h" />
     <ClInclude Include="particle.h" />
     <ClInclude Include="pause.h" />
@@ -240,7 +238,6 @@
     <ClInclude Include="shadow.h" />
     <ClInclude Include="snow.h" />
     <ClInclude Include="sound.h" />
-    <ClInclude Include="thread.h" />
     <ClInclude Include="time.h" />
     <ClInclude Include="title.h" />
     <ClInclude Include="titlelogo.h" />

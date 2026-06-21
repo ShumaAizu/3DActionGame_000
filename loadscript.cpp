@@ -5,8 +5,10 @@
 // 
 //=============================================================================
 
+//*****************************************************************************
+// インクルードヘッダー
+//*****************************************************************************
 #include "loadscript.h"
-#include "object.h"
 #include "player.h"
 #include "friends.h"
 #include "model.h"
@@ -107,27 +109,31 @@ HRESULT LoadScript(const char* pScriptFileName)
 		(void)fgets(aStr, sizeof(aStr), pScriptFile);		// 一行読み取り
 
 		if (strstr(aStr, LOAD_MOTION) != NULL)
-		{
+		{// MOTIONSCRIPTが読み込まれたなら
+			// 位置を調整しパスを読み込む
 			pStart = strchr(aStr, '=');
 
 			(void)sscanf(pStart + 1, "%s %d", &aScriptPath, &type);
 
+			// モーション情報読み込み
 			LoadMotionInfo(aScriptPath, (OBJECTTYPE)type);
 		}
 
 		if (strstr(aStr, LOAD_OBJECT) != NULL)
-		{
+		{// OBJECTSCRIPTが読み込まれたなら
+			// 位置を調整しパスを読み込む
 			pStart = strchr(aStr, '=');
 
 			(void)sscanf(pStart + 1, "%s %d", &aScriptPath, &type);
 
+			// オブジェクト読み込み
 			LoadObject(aScriptPath);
 		}
 
 		if (strstr(aStr, LOAD_END))
-		{
+		{// END_SCRIPTが読み込まれたなら
+			// ファイルを閉じループ終了
 			fclose(pScriptFile);
-
 			break;
 		}
 	}
@@ -187,30 +193,35 @@ HRESULT LoadMotionInfo(const char* pMotionFileName, OBJECTTYPE type)
 		LoadEnableString(&aStrCpy[0], &aStr[0]);		// 有効文字だけ抜き取って複製
 
 		if (strstr(aStr, LOAD_NUMMODEL))
-		{
+		{// NUM_MODELを読み込んだなら
 			if ((pStart = strchr(aStr, '=')) == NULL)
-			{
+			{// =が存在しなければスキップ
 				continue;
 			}
 
+			// モデル数読み込み
 			(void)sscanf(pStart + 1, "%d", &nNumModel);
 		}
 
 		if (strstr(aStr, LOAD_MODEL))
-		{
+		{// MODEL_FILENAMEを読み込んだなら
 			if ((pStart = strchr(aStr, '=')) == NULL)
-			{
+			{// =が存在しなければスキップ
 				continue;
 			}
 
+			// モデルのパスを読み込み
 			(void)sscanf(pStart + 1, "%s", &aModelPath);
 
+			// 指定の種類によって関数を分ける
 			switch (type)
 			{
+				// プレイヤー
 			case OBJECTTYPE_PLAYER:
 				LoadPartsPlayer(aModelPath);
 				break;
 
+				// 仲間
 			case OBJECTTYPE_FRIENDS:
 				LoadPartsFriends(aModelPath);
 				break;
@@ -218,22 +229,22 @@ HRESULT LoadMotionInfo(const char* pMotionFileName, OBJECTTYPE type)
 		}
 
 		if (strstr(aStr, LOAD_PLAYER))
-		{
+		{// CHARCTERSETを読み込んだ
 			while (true)
 			{
-				memset(aStr, NULL, sizeof(aStr));
-				memset(aStrCpy, NULL, sizeof(aStrCpy));
-				(void)fgets(aStr, sizeof(aStr), pMotionFile);
-				LoadEnableString(&aStrCpy[0], &aStr[0]);
+				memset(aStr, NULL, sizeof(aStr));				  // 文字列クリア
+				memset(aStrCpy, NULL, sizeof(aStrCpy));			  // コピーもクリア
+				(void)fgets(aStr, sizeof(aStr), pMotionFile);	  // 一列読み込み
+				LoadEnableString(&aStrCpy[0], &aStr[0]);		  // 有効文字だけ抜き取って複製
 
 				if (strcmp(aStrCpy, LOAD_PARTS) == 0)
-				{
+				{// PARTSSETを読み込んだ
 					while (true)
 					{
-						memset(aStr, NULL, sizeof(aStr));
-						memset(aStrCpy, NULL, sizeof(aStrCpy));
-						(void)fgets(aStr, sizeof(aStr), pMotionFile);
-						LoadEnableString(&aStrCpy[0], &aStr[0]);
+						memset(aStr, NULL, sizeof(aStr));					// 文字列クリア
+						memset(aStrCpy, NULL, sizeof(aStrCpy));				// コピーもクリア
+						(void)fgets(aStr, sizeof(aStr), pMotionFile);		// 一列読み込み
+						LoadEnableString(&aStrCpy[0], &aStr[0]);			// 有効文字だけ抜き取って複製
 
 						if (strstr(aStr, LOAD_INDEX))
 						{

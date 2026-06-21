@@ -47,11 +47,11 @@ typedef struct
 // グローバル変数
 //*****************************************************************************
 LPDIRECT3DTEXTURE9 g_apTextureItemUI[ITEMUI_MAX] = {};		// テクスチャへのポインタ
-LPDIRECT3DVERTEXBUFFER9 g_pVtxBuffItemUI = NULL;					// 頂点バッファへのポインタ
-ITEMUI g_ItemUI = ITEMUI_START;							// タイトルメニューの状態
+LPDIRECT3DVERTEXBUFFER9 g_pVtxBuffItemUI = NULL;			// 頂点バッファへのポインタ
+ITEMUI g_ItemUI = ITEMUI_START;								// タイトルメニューの状態
 ItemUI g_aItemUI[ITEMUI_MAX] = {};							// タイトルメニューの情報
-int g_nItemUIChangeCounter = 0;									// メニュー切り替えカウンター
-bool g_bUpdate_ItemUI = true;									// タイトルメニュー操作可能か
+int g_nItemUIChangeCounter = 0;								// メニュー切り替えカウンター
+bool g_bUpdate_ItemUI = true;								// タイトルメニュー操作可能か
 
 ItemUIInfo g_ItemUIInfo[] =
 {

@@ -5,14 +5,17 @@
 // 
 //=============================================================================
 
+//*****************************************************************************
+// インクルードヘッダー
+//*****************************************************************************
 #include "input.h"
 
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
-LPDIRECTINPUT8 g_pInput = NULL;
-LPDIRECTINPUTDEVICE8 g_pDevKeyboard = NULL;
-BYTE g_aKeyState[NUM_KEY_MAX];
+LPDIRECTINPUT8 g_pInput = NULL;							// 入力オブジェクト
+LPDIRECTINPUTDEVICE8 g_pDevKeyboard = NULL;				// 入力デバイス
+BYTE g_aKeyState[NUM_KEY_MAX];							// キーボードの情報
 BYTE g_aKeyStateTrigger[NUM_KEY_MAX];					// キーボードのトリガー情報
 BYTE g_aKeyStateRelease[NUM_KEY_MAX];					// キーボードのリリース情報
 BYTE g_aKeyStateRepeat[NUM_KEY_MAX];					// キーボードのリピート情報
@@ -22,15 +25,13 @@ XINPUT_STATE g_joykeyStateTrigger;						// ジョイパッドのトリガー情報
 XINPUT_STATE g_joykeyStateRelease;						// ジョイパッドのリリース情報
 XINPUT_STATE g_joykeyStateRepeat;						// ジョイパッドのリピート情報
 XINPUT_VIBRATION g_joypadVibration;						// ジョイパッドの振動情報
-XINPUT_KEYSTROKE g_joypadStroke[NUM_JOYSTROKE_MAX];
-int g_nVibCounter = 0;
-bool g_bJoyStick[JOYSTICK_MAX] = {};
-bool g_bJoyStickRepeat[NUM_JOYSTROKE_MAX] = {};
-bool g_JoypadControl = false;
-DIMOUSESTATE g_mousestate = {};
+bool g_bJoyStick[JOYSTICK_MAX] = {};					// 倒しているスティックの情報
+bool g_bJoyStickRepeat[NUM_JOYSTROKE_MAX] = {};			// 倒しているスティックのリピート情報
+int g_nVibCounter = 0;									// 振動カウンター
 
 LPDIRECTINPUTDEVICE8 g_pDevMouse = NULL;		// 入力デバイス(マウス)へのポインタ
 
+DIMOUSESTATE g_mousestate = {};					// マウスの情報
 DIMOUSESTATE g_CurrentMouseState;				// マウスの入力情報
 DIMOUSESTATE g_PrevMouseState;					// マウスの過去の入力情報
 BYTE g_aMouseState[NUM_MOUSE_MAX];				// マウスのプレス情報
@@ -86,8 +87,7 @@ HRESULT InitJoypad(void)
 	// メモリのクリア
 	memset(&g_joykeyState, 0, sizeof(XINPUT_STATE));
 	memset(&g_joypadVibration, 0, sizeof(XINPUT_VIBRATION));
-	memset(&g_joypadStroke[0], 0, sizeof(XINPUT_KEYSTROKE));
-	g_JoypadControl = false;
+
 	// XInputのステートを設定(有効にする)
 	XInputEnable(true);
 
@@ -155,7 +155,6 @@ void UpdateKeyboard(void)
 void UpdateJoypad(void)
 {
 	XINPUT_STATE joykeyState;		// ジョイパッドの入力情報
-	XINPUT_KEYSTROKE joykeystroke;
 
 	// ジョイパッドの状態を取得
 	if (XInputGetState(0, &joykeyState) == ERROR_SUCCESS)
@@ -236,17 +235,6 @@ void UpdateJoypad(void)
 		else
 		{
 			g_bJoyStick[JOYSTICKR_RIGHT] = false;
-		}
-	}
-
-	if (XInputGetKeystroke(0, 0, &joykeystroke) == ERROR_SUCCESS)
-	{
-		for (int nCntKey = 0; nCntKey < NUM_JOYSTROKE_MAX; nCntKey++)
-		{
-			if (joykeystroke.VirtualKey - JOYKEYSTROKE_START == nCntKey)
-			{
-				g_joypadStroke[nCntKey] = joykeystroke;
-			}
 		}
 	}
 
@@ -339,48 +327,6 @@ bool GetKeyboardAny(void)
 bool GetJoypadPress(JOYKEY key)
 {
 	return (g_joykeyState.Gamepad.wButtons & (0x01 << key)) ? true : false;
-}
-
-//=============================================================================
-//	ジョイパッドのプレス情報を取得
-//=============================================================================
-bool GetJoypadStroke(WORD key)
-{
-	static int nCounter[NUM_JOYSTROKE_MAX] = {};		// カウンターを回す
-	if (g_joypadStroke[key - JOYKEYSTROKE_START].VirtualKey & key)
-	{// 取得したキーが一致していたら
-		if (g_bJoyStickRepeat[key - JOYKEYSTROKE_START] == false && g_joypadStroke[key - JOYKEYSTROKE_START].Flags == XINPUT_KEYSTROKE_KEYDOWN)
-		{// リピートがオフかつプレスの時
-			g_bJoyStickRepeat[key - JOYKEYSTROKE_START] = true;		// リピート待機
-			return true;					// いったん返す
-		}
-
-		if (g_joypadStroke[key - JOYKEYSTROKE_START].Flags == 5)
-		{// リピートになったら
-			g_bJoyStickRepeat[key - JOYKEYSTROKE_START] = false;		// 待機状態から戻す
-			
-			nCounter[key - JOYKEYSTROKE_START]++;						// カウントを回す
-			if (nCounter[key - JOYKEYSTROKE_START] % 5 == 0)
-			{
-				return true;
-			}
-			else
-			{
-				return false;
-			}
-		}
-		else
-		{
-			nCounter[key - JOYKEYSTROKE_START] = 0;
-		}
-
-		if(g_joypadStroke[key - JOYKEYSTROKE_START].Flags == XINPUT_KEYSTROKE_KEYUP)
-		{
-			g_bJoyStickRepeat[key - JOYKEYSTROKE_START] = false;		// 待機状態から戻す
-		}
-	}
-
-	return false;
 }
 
 //=============================================================================
@@ -570,19 +516,6 @@ void SetJoypadVibration(WORD nLVibration, WORD nRVibration, int nVibCounter)
 XINPUT_STATE *GetJoypadState(void)
 {
 	return &g_joykeyState;
-}
-
-//=============================================================================
-//	ジョイパッドの情報取得
-//=============================================================================
-XINPUT_KEYSTROKE* GetJoypadStroke(void)
-{
-	return &g_joypadStroke[0];
-}
-
-bool GetJoypadControl(void)
-{
-	return g_JoypadControl;
 }
 
 //================================================================================================================

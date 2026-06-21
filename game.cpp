@@ -5,6 +5,9 @@
 // 
 //=============================================================================
 
+//*****************************************************************************
+// インクルードヘッダー
+//*****************************************************************************
 #include "game.h"
 #include "loadscript.h"
 #include "player.h"
@@ -43,16 +46,15 @@ GAMEFLAG g_nextgameFlag = GAMEFLAG_NORMAL;				// 次のゲームの状態
 int g_nCounterGameFlag = 0;								// 状態管理カウンター
 bool g_bPause = false;									// ポーズ中かどうか
 
-//========================================
+//=============================================================================
 //	ゲーム画面の初期化処理
-//========================================
+//=============================================================================
 void InitGame(void)
 {
-	g_gameFlag = GAMEFLAG_NORMAL;
-
-	g_nextgameFlag = GAMEFLAG_NORMAL;
-
-	g_nCounterGameFlag = 0;
+	// 各種フラグ
+	g_gameFlag = GAMEFLAG_NORMAL;		// 今のフラグ
+	g_nextgameFlag = GAMEFLAG_NORMAL;	// 次のフラグ
+	g_nCounterGameFlag = 0;				// フラグが切り替わるまでのカウンター
 
 	// ポーズ状態の初期化
 	g_bPause = false;
@@ -96,12 +98,16 @@ void InitGame(void)
 	// モーションセット
 	SetMotion(MOTIONTYPE_NEUTRAL, true, false, 0);
 
+	// カメラ動作
+	CameraUpdateswitch(true);
+
+	// BGM再生
 	PlaySound(SOUND_LABEL_GAMEBGM000);
 }
 
-//========================================
+//=============================================================================
 //	ゲーム画面の終了処理
-//========================================
+//=============================================================================
 void UninitGame(void)
 {
 	// プレイヤーの終了処理
@@ -122,7 +128,7 @@ void UninitGame(void)
 	// アイテムの終了処理
 	UninitItem();
 
-	//
+	// アイテムのUIの終了処理
 	UninitItemUI();
 
 	// 制限時間の終了処理
@@ -141,18 +147,16 @@ void UninitGame(void)
 	StopSound();
 }
 
-//========================================
+//=============================================================================
 //	ゲーム画面の更新処理
-//========================================
+//=============================================================================
 void UpdateGame(void)
 {
 	if ((GetKeyboardTrigger(DIK_P) == true || GetJoypadTrigger(JOYKEY_START) == true) && GetFade() != FADE_IN && g_gameFlag == GAMEFLAG_NORMAL)
 	{ // ポーズキーが押された
 		g_bPause = g_bPause ? false : true;		// ポーズ状態を切り替える
-		if (g_bPause == true)
-		{
 
-		}
+		// ポーズメニューの選択状態を設定
 		SetPauseMenu(PAUSE_MENU_CONTINUE);
 	}
 
@@ -162,7 +166,7 @@ void UpdateGame(void)
 		UpdatePause();
 	}
 	else if(GetFade() != FADE_OUT)
-	{
+	{// フェードアウトしていなければ
 		// メッシュフィールドの更新処理
 		UpdateMeshField();
 
@@ -187,7 +191,7 @@ void UpdateGame(void)
 		// アイテムの更新処理
 		UpdateItem();
 
-		// 
+		// アイテムのUIの更新処理
 		UpdateItemUI();
 
 		// 制限時間の更新処理
@@ -215,13 +219,6 @@ void UpdateGame(void)
 		UpdateParticle();
 	}
 
-#ifdef _DEBUG
-	if (GetKeyboardTrigger(DIK_RETURN) == true)
-	{
-		//SetFade(MODE_RESULT, COLOR_WHITE, DEFAULT_FADESPEED, DEFAULT_FADESPEED);
-	}
-#endif
-
 	if (g_nextgameFlag == GAMEFLAG_CLEAR || g_nextgameFlag == GAMEFLAG_GAMEOVER)
 	{ // 次の状態がクリアかゲームオーバーになったら
 		g_nCounterGameFlag--;			// カウントを減らす
@@ -243,9 +240,9 @@ void UpdateGame(void)
 	}
 }
 
-//========================================
+//=============================================================================
 //	ゲーム画面の描画処理
-//========================================
+//=============================================================================
 void DrawGame(void)
 {
 	// メッシュフィールドの描画処理
@@ -293,7 +290,7 @@ void DrawGame(void)
 	// 制限時間の描画処理
 	DrawTime();
 
-	//
+	// アイテムのUIの描画処理
 	DrawItemUI();
 
 	if (g_bPause == true)
@@ -305,16 +302,16 @@ void DrawGame(void)
 
 }
 
-//========================================
+//=============================================================================
 //	ゲームの状態設定
-//========================================
+//=============================================================================
 void SetGameFlag(GAMEFLAG state, int nCounter)
 {
-	g_gameFlag = GAMEFLAG_NONE;
+	g_gameFlag = GAMEFLAG_NONE;		// 今のフラグを何もしない状態に
 
-	g_nextgameFlag = state;
+	g_nextgameFlag = state;			// 指定のフラグに変更
 
-	g_nCounterGameFlag = nCounter;
+	g_nCounterGameFlag = nCounter;	// 指定のフレーム数カウント
 }
 
 //========================================

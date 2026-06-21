@@ -80,12 +80,6 @@ void InitResultMenu(void)
 		&g_pVtxBuffResultMenu,
 		NULL);
 
-	//for (int nCntResultMenuTex = 0; nCntResultMenuTex < RESULTMENU_MAX; nCntResultMenuTex++)
-	//{
-	//	// テクスチャの読み込み
-	//	D3DXCreateTextureFromFile(pDevice, pResultUIPass[nCntResultMenuTex], &g_apTextureResultMenu[nCntResultMenuTex]);
-	//}
-
 	// 初期化
 	g_resultMenu = RESULTMENU_RESTART;
 	g_bUpdate_ResultMenu = true;

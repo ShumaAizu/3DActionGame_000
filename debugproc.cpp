@@ -5,6 +5,9 @@
 // 
 //=============================================================================
 
+//*****************************************************************************
+// インクルードヘッダー
+//*****************************************************************************
 #include "main.h"
 #include "debugproc.h"
 
@@ -86,41 +89,6 @@ void PrintDebugProc(const char* fmt, ...)
 
 	// リストに受けとった文字列を代入
 	va_start(args, fmt);
-
-	//for (const char* pStr = fmt; *pStr; pStr++)
-	//{
-	//	if (*pStr == '%')
-	//	{
-	//		pStr++;
-	//		switch (*pStr)
-	//		{
-	//		case 'd':
-	//			sprintf(aStr, fmt, va_arg(args, int));
-	//			break;
-
-	//		case 'c':
-	//			sprintf(aStr, fmt, va_arg(args, char));
-	//			break;
-
-	//		case 'f':
-	//			sprintf(aStr, fmt, va_arg(args, double));
-	//			break;
-
-	//		case '.':
-	//			pStr += 2;
-	//			sprintf(aStr, fmt, va_arg(args, double));
-	//			break;
-
-	//		case 's':
-	//			sprintf(&aStr[0], fmt, va_arg(args, const char*));
-	//			break;
-
-	//		default:
-
-	//			break;
-	//		}
-	//	}
-	//}
 
 	// リストからバッファへ文字列を代入
 	vsprintf(&aStr[0], fmt, args);
